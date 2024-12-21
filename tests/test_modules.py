@@ -3,6 +3,7 @@ import torch
 import pytest
 from dataclasses import dataclass
 from cxt.modules import MutationsToLatentSpace
+from cxt.modules import MLP, LayerNorm
 
 
 @pytest.fixture
@@ -42,6 +43,80 @@ def test_mutation_to_latent_space_runtime(sample_module_mutations_to_latent_spac
     for i in range(5):
         elapsed = time_forward_pass()  
         print(f"Forward pass (MutationsToLatentSpace) run {i} took", elapsed*1000, "milliseconds.")
+
+    max_allowed_time = 1.0
+    assert elapsed < max_allowed_time, (
+        f"Forward pass took {elapsed:.4f}s, which is longer than the allowed {max_allowed_time}s."
+    )
+@pytest.fixture
+def sample_module_mlp():
+    """Fixture to create a sample MLP model and return it."""
+    @dataclass
+    class Config:
+        n_embd: int = 500
+        bias: bool = True
+        dropout: float = 0.1
+    return MLP(Config())
+
+@pytest.fixture
+def sample_module_layer_norm():
+    """Fixture to create a sample LayerNorm model and return it."""
+    return LayerNorm(ndim=500, bias=True)
+
+def test_mlp_forward_pass(sample_module_mlp):
+    """Simple test to ensure forward pass runs and outputs the right shape."""
+    x = torch.randn(64, 500)
+    model = sample_module_mlp
+    y = model(x)
+    assert y.size() == (64, 500), (
+        f"Output has shape {y.size()}, but expected {(64, 500)}"
+    )
+
+def test_layer_norm_forward_pass(sample_module_layer_norm):
+    """Simple test to ensure forward pass runs and outputs the right shape."""
+    x = torch.randn(64, 500)
+    model = sample_module_layer_norm
+    y = model(x)
+    assert y.size() == (64, 500), (
+        f"Output has shape {y.size()}, but expected {(64, 500)}"
+    )
+
+def test_mlp_runtime(sample_module_mlp):
+    x = torch.randn(64, 500)
+    model = sample_module_mlp
+
+    def time_forward_pass():
+        start_time = time.time()
+        y = model(x)
+        end_time = time.time()
+        elapsed = end_time - start_time
+        return elapsed
+
+    print("")
+    for i in range(5):
+        elapsed = time_forward_pass()  
+        print(f"Forward pass (MLP) run {i} took", elapsed*1000, "milliseconds.")
+
+    max_allowed_time = 1.0
+    assert elapsed < max_allowed_time, (
+        f"Forward pass took {elapsed:.4f}s, which is longer than the allowed {max_allowed_time}s."
+    )
+
+def test_layer_norm_runtime(sample_module_layer_norm):
+    x = torch.randn(64, 500)
+    model = sample_module_layer_norm
+
+    def time_forward_pass():
+        start_time = time.time()
+        y = model(x)
+        end_time = time.time()
+        elapsed = end_time - start_time
+        return elapsed
+
+    print("")
+    for i in range(5):
+        elapsed = time_forward_pass()  
+        print(f"Forward pass (LayerNorm) run {i} took", elapsed*1000, "milliseconds.")
 
     max_allowed_time = 1.0
     assert elapsed < max_allowed_time, (
