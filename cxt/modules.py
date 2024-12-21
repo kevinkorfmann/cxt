@@ -3,33 +3,60 @@ import torch.nn as nn
 
 class MutationsToLatentSpace(nn.Module):
     """
-    A module that projects input mutations to a latent space.
-    Specifically: [B, [XOR, XNOR], WS, NW, IE] -> [B, NW, OE]
+    A cache for storing and concatenating attention key/value tensors during incremental decoding.
+    Specifically: [B, n_head, T, head_size]
     where:
         B: batch size
-        WS: window size
-        NW: number of windows
-        IE: input embedding size
-        OE: output embedding size
+        n_head: number of attention heads
+        T: sequence length
+        head_size: dimension of each attention head
+    
     Args:
-        config (object): Configuration object containing the following attributes:
-            - num_samples (int): Number of samples.
-            - sample_scale_embd (int): Scaling factor for the embedding.
-            - dropout (float): Dropout rate.
+        max_batch_size (int): Maximum batch size.
+        max_seq_length (int): Maximum sequence length.
+        n_head (int): Number of attention heads.
+        head_size (int): Dimension of each attention head.
+        device (str or torch.device): Device on which to allocate the tensors 
+            (e.g., "cpu" or "cuda").
+    
     Attributes:
-        proj01 (nn.Linear): First linear projection layer.
-        gelu (nn.GELU): GELU activation function.
-        proj02 (nn.Linear): Second linear projection layer.
-        dropout (nn.Dropout): Dropout layer.
-        weights (torch.Tensor): Predefined weights for combining XOR and XNOR results.
+        src_key_cache (torch.Tensor): Pre-allocated tensor for source keys, 
+            shape [B, n_head, max_seq_length, head_size].
+        src_value_cache (torch.Tensor): Pre-allocated tensor for source values, 
+            shape [B, n_head, max_seq_length, head_size].
+        tgt_key_cache (torch.Tensor): Pre-allocated tensor for target keys, 
+            shape [B, n_head, max_seq_length, head_size].
+        tgt_value_cache (torch.Tensor): Pre-allocated tensor for target values, 
+            shape [B, n_head, max_seq_length, head_size].
+        src_len (int): Number of valid tokens in the source cache.
+        tgt_len (int): Number of valid tokens in the target cache.
+
     Methods:
-        forward(x):
-            Forward pass of the module.
+        update_source(key, value):
+            Overwrites the source key/value caches with the given tensors. 
             Args:
-                x (torch.Tensor): Input tensor of shape [B, 2, WS, NW, IE].
-                mask_singetons (bool): Whether to mask singletons (default: True).
+                key (torch.Tensor): Source key of shape [B, n_head, s_len, head_size].
+                value (torch.Tensor): Source value of shape [B, n_head, s_len, head_size].
+        
+        update_target(key, value, position):
+            Writes the target key/value at the specified position. 
+            Args:
+                key (torch.Tensor): Target key of shape [B, n_head, 1, head_size].
+                value (torch.Tensor): Target value of shape [B, n_head, 1, head_size].
+                position (int): The position in the target cache to write to.
+        
+        get_kv(position):
+            Concatenates source and target key/value up to the specified target position.
+            Args:
+                position (int): Target sequence position (0-based) up to which 
+                    the cache is read.
             Returns:
-                torch.Tensor: Output tensor of shape [B, NW, OE].
+                (torch.Tensor, torch.Tensor):
+                    - key of shape [B, n_head, src_len + (position+1), head_size].
+                    - value of shape [B, n_head, src_len + (position+1), head_size].
+        
+        clear():
+            Resets the source and target caches to zero and sets src_len/tgt_len to 0.
     """
     def __init__(self, config):
         super().__init__()
