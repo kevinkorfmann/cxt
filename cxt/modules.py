@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class MutationsToLatentSpace(nn.Module):
     """
@@ -83,3 +84,67 @@ class MutationsToLatentSpace(nn.Module):
         x = (x * self.weights).sum(dim=1)
         x = x.transpose(1, 2).reshape(B, NW, -1)
         return x
+
+
+class MLP(nn.Module):
+    """
+    A multi-layer perceptron (MLP) module.
+    Args:
+        config (object): Configuration object containing the following attributes:
+            - n_embd (int): The size of the input and output embeddings.
+            - bias (bool): Whether to use bias in the linear layers.
+            - dropout (float): Dropout probability.
+    Attributes:
+        c_fc (nn.Linear): The first linear layer that projects the input to a higher dimension.
+        gelu (nn.GELU): GELU activation function.
+        c_proj (nn.Linear): The second linear layer that projects the higher dimension back to the original size.
+        dropout (nn.Dropout): Dropout layer for regularization.
+    Methods:
+        forward(x):
+            Forward pass of the MLP.
+            Args:
+                x (torch.Tensor): Input tensor.
+            Returns:
+                torch.Tensor: Output tensor after applying the linear layers, activation function, and dropout.
+    """
+    
+    def __init__(self, config):
+        super().__init__()
+        self.c_fc    = nn.Linear(config.n_embd, 4 * config.n_embd, bias=config.bias)
+        self.gelu    = nn.GELU()
+        self.c_proj  = nn.Linear(4 * config.n_embd, config.n_embd, bias=config.bias)
+        self.dropout = nn.Dropout(config.dropout)
+
+    @torch.compile()
+    def forward(self, x):
+        x = self.c_fc(x)
+        x = self.gelu(x)
+        x = self.c_proj(x)
+        x = self.dropout(x)
+        return x
+
+
+class LayerNorm(nn.Module):
+    """
+    Layer normalization module.
+    Args:
+        ndim (int): The number of dimensions in the input tensor.
+        bias (bool): If True, adds a learnable bias to the normalized tensor.
+    Attributes:
+        weight (torch.nn.Parameter): Learnable scaling parameter of shape (ndim,).
+        bias (torch.nn.Parameter or None): Learnable bias parameter of shape (ndim,) if bias is True, otherwise None.
+    Methods:
+        forward(input):
+            Applies layer normalization to the input tensor.
+            Args:
+                input (torch.Tensor): The input tensor to be normalized.
+            Returns:
+                torch.Tensor: The normalized tensor.
+    """
+    def __init__(self, ndim, bias):
+        super().__init__()
+        self.weight = nn.Parameter(torch.ones(ndim))
+        self.bias = nn.Parameter(torch.zeros(ndim)) if bias else None
+    @torch.compile()
+    def forward(self, input):
+        return F.layer_norm(input, self.weight.shape, self.weight, self.bias, 1e-5)
