@@ -1,0 +1,11 @@
+numpy
+torch
+
+[dev]
+pytest
+black
+flake8
+
+[docs]
+sphinx
+sphinx-rtd-theme
