@@ -4,6 +4,7 @@ import pytest
 from dataclasses import dataclass
 from cxt.modules import MutationsToLatentSpace
 from cxt.modules import MLP, LayerNorm
+from cxt.model import TokenFreeDecoder
 
 
 @pytest.fixture
@@ -29,8 +30,9 @@ def test_mutation_to_latent_space(sample_module_mutations_to_latent_space):
 
 def test_mutation_to_latent_space_runtime(sample_module_mutations_to_latent_space):
     B, XX, WS, NW, IE = 2, 2, 5, 500, 50
-    x = torch.randn(B, XX, WS, NW, IE)
+    x = torch.randn(B, XX, WS, NW, IE).cuda()
     model = sample_module_mutations_to_latent_space
+    model.cuda()
 
     def time_forward_pass():
         start_time = time.time()
@@ -61,7 +63,7 @@ def sample_module_mlp():
 @pytest.fixture
 def sample_module_layer_norm():
     """Fixture to create a sample LayerNorm model and return it."""
-    return LayerNorm(ndim=500, bias=True)
+    return LayerNorm(ndim=500, use_bias=True)
 
 def test_mlp_forward_pass(sample_module_mlp):
     """Simple test to ensure forward pass runs and outputs the right shape."""
@@ -82,8 +84,9 @@ def test_layer_norm_forward_pass(sample_module_layer_norm):
     )
 
 def test_mlp_runtime(sample_module_mlp):
-    x = torch.randn(64, 500)
+    x = torch.randn(64, 500).cuda()
     model = sample_module_mlp
+    model.cuda()
 
     def time_forward_pass():
         start_time = time.time()
@@ -103,8 +106,9 @@ def test_mlp_runtime(sample_module_mlp):
     )
 
 def test_layer_norm_runtime(sample_module_layer_norm):
-    x = torch.randn(64, 500)
+    x = torch.randn(64, 500).cuda()
     model = sample_module_layer_norm
+    model.cuda()
 
     def time_forward_pass():
         start_time = time.time()
@@ -122,3 +126,4 @@ def test_layer_norm_runtime(sample_module_layer_norm):
     assert elapsed < max_allowed_time, (
         f"Forward pass took {elapsed:.4f}s, which is longer than the allowed {max_allowed_time}s."
     )
+

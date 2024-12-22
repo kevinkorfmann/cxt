@@ -1,6 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from cxt.kv_cache import KVCache
+from torchtune.modules import RotaryPositionalEmbeddings
+
 
 class MutationsToLatentSpace(nn.Module):
     """
@@ -73,7 +76,6 @@ class MutationsToLatentSpace(nn.Module):
         self.dropout = nn.Dropout(config.dropout)
         self.register_buffer('weights', torch.tensor([0.7, 0.3]).view(1, 2, 1, 1, 1))
 
-    @torch.compile()
     def forward(self, x):
         B, XX, WS, NW, IE = x.size()
         x[..., 0] = 0. # masks singeltons                          
@@ -115,7 +117,6 @@ class MLP(nn.Module):
         self.c_proj  = nn.Linear(4 * config.n_embd, config.n_embd, bias=config.bias)
         self.dropout = nn.Dropout(config.dropout)
 
-    @torch.compile()
     def forward(self, x):
         x = self.c_fc(x)
         x = self.gelu(x)
@@ -145,9 +146,91 @@ class LayerNorm(nn.Module):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(ndim))
         self.bias = nn.Parameter(torch.zeros(ndim)) if use_bias else None
-    @torch.compile()
     def forward(self, input):
         return F.layer_norm(input, self.weight.shape, self.weight, self.bias, 1e-5)
 
+
+
+class CausalSelfAttention(nn.Module):
+    
+    def __init__(self, config):
+        super().__init__()
+        assert config.n_embd % config.n_head == 0
+        self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd, bias=config.bias)
+        self.c_proj = nn.Linear(config.n_embd, config.n_embd, bias=config.bias)
+        self.attn_dropout = nn.Dropout(config.dropout)
+        self.resid_dropout = nn.Dropout(config.dropout)
+        self.n_head = config.n_head
+        self.n_embd = config.n_embd
+        self.dropout = config.dropout
+        self.head_size = config.n_embd // config.n_head
+        self.rotary_emb = RotaryPositionalEmbeddings(dim=self.head_size,max_seq_len=1001)
+        #self.kv_cache = KVCache(max_batch_size=256,max_seq_length=1001,n_head=self.n_head,
+        #    head_size=self.head_size,
+        #    device='cuda'
+        #)
+
+            
+    def forward(self, x, attn_mask, position=None, use_cache=False):
+        B, T, C = x.size()
+
+        q, k, v = self.c_attn(x).split(self.n_embd, dim=2)
+        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        
+        if use_cache:
+            q = self.rotary_emb(q, input_pos=self.kv_cache.src_len + position)
+            k = self.rotary_emb(k, input_pos=self.kv_cache.src_len + position)
+            self.kv_cache.update_source(k, v, position)
+            k, v = self.kv_cache.get_kv(position)
+        else:
+            q = self.rotary_emb(q)
+            k = self.rotary_emb(k)
+        
+        y = compute_attention_with_mask(
+            q, k, v,
+            B=B, T=T,
+            attn_mask=attn_mask,
+            device=x.device,
+            use_cache=use_cache,
+            position=position,
+            src_len=self.kv_cache.src_len if use_cache else None
+        )
+        
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
+        y = self.resid_dropout(self.c_proj(y))
+        return y
+
+
+
+def compute_attention_with_mask(q, k, v, B, T, attn_mask, device, use_cache, position=None, src_len=None):
+    """Attention computation"""
+    if use_cache:
+        total_len = k.size(2)
+        attn_mask = torch.zeros(1, 1, 1, total_len, device=device).bool()
+        attn_mask[:, :, :, :src_len] = True  # Full source attention
+        if position >= 0:
+            # Causal mask for generated tokens
+            attn_mask[:, :, :, src_len:src_len + position + 1] = True
+        return F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
+    else:
+        return F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
+
+
+
+
+class Block(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.ln_1 = LayerNorm(config.n_embd, use_bias=config.bias)
+        self.attn = CausalSelfAttention(config)
+        self.ln_2 = LayerNorm(config.n_embd, use_bias=config.bias)
+        self.mlp = MLP(config)
+        
+    def forward(self, x, attn_mask, position=None, use_cache=False):
+        x = x + self.attn(self.ln_1(x), attn_mask=attn_mask, position=position, use_cache=use_cache)
+        x = x + self.mlp(self.ln_2(x))
+        return x
 
 
