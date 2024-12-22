@@ -6,3 +6,6 @@ pytest
 numpy
 torch
 
+torchao
+torchtune
+
