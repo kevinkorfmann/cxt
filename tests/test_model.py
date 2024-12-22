@@ -44,6 +44,33 @@ def test_token_free_decoder_forward_pass(sample_module_token_free_decoder):
         f"Output has shape {y.size()}, but expected {(B, 501, 258)}"
     )
 
+def test_token_free_decoder_compiled_no_cast_runtime(sample_module_token_free_decoder):
+    B = 64
+    x = torch.randn(B, 2, 4, 500, 50).cuda()
+    y = torch.randint(low=0, high=258, size=(B, 501)).cuda().long()
+    attn_mask = generate_causal_mask(1001, 'cuda')
+    attn_mask = attn_mask.repeat(x.size(0), 1, 1, 1)
+    model = sample_module_token_free_decoder
+    model.cuda()
+    model = torch.compile(model)
+
+    def time_forward_pass():
+        start_time = time.time()
+        _ = model(x, y, attn_mask, calculate_loss=False)
+        end_time = time.time()
+        elapsed = end_time - start_time
+        return elapsed
+
+    print("")
+    for i in range(5):
+        elapsed = time_forward_pass()  
+        print(f"Forward pass (compiled no-autocast TokenFreeDecoder) run {i} took", elapsed*1000, "milliseconds.")
+
+    max_allowed_time = 1.0
+    assert elapsed < max_allowed_time, (
+        f"Forward pass took {elapsed:.4f}s, which is longer than the allowed {max_allowed_time}s."
+    )
+
 def test_token_free_decoder_compiled_runtime(sample_module_token_free_decoder):
     B = 64
     x = torch.randn(B, 2, 4, 500, 50).cuda()
