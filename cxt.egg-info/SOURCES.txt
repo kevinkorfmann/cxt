@@ -2,6 +2,7 @@ LICENSE
 README.md
 setup.py
 cxt/__init__.py
+cxt/kv_cache.py
 cxt/modules.py
 cxt.egg-info/PKG-INFO
 cxt.egg-info/SOURCES.txt
@@ -9,4 +10,5 @@ cxt.egg-info/dependency_links.txt
 cxt.egg-info/requires.txt
 cxt.egg-info/top_level.txt
 tests/__init__.py
+tests/test_kv_cache.py
 tests/test_modules.py

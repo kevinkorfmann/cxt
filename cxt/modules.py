@@ -129,7 +129,7 @@ class LayerNorm(nn.Module):
     Layer normalization module.
     Args:
         ndim (int): The number of dimensions in the input tensor.
-        bias (bool): If True, adds a learnable bias to the normalized tensor.
+        use_bias (bool): If True, adds a learnable bias to the normalized tensor.
     Attributes:
         weight (torch.nn.Parameter): Learnable scaling parameter of shape (ndim,).
         bias (torch.nn.Parameter or None): Learnable bias parameter of shape (ndim,) if bias is True, otherwise None.
@@ -141,10 +141,13 @@ class LayerNorm(nn.Module):
             Returns:
                 torch.Tensor: The normalized tensor.
     """
-    def __init__(self, ndim, bias):
+    def __init__(self, ndim: int, use_bias: bool = True):
         super().__init__()
         self.weight = nn.Parameter(torch.ones(ndim))
-        self.bias = nn.Parameter(torch.zeros(ndim)) if bias else None
+        self.bias = nn.Parameter(torch.zeros(ndim)) if use_bias else None
     @torch.compile()
     def forward(self, input):
         return F.layer_norm(input, self.weight.shape, self.weight, self.bias, 1e-5)
+
+
+
