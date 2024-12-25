@@ -151,53 +151,57 @@ class LayerNorm(nn.Module):
 
 
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torchtune.modules import RotaryPositionalEmbeddings
+
 class CausalSelfAttention(nn.Module):
-    
     def __init__(self, config):
         super().__init__()
-        assert config.n_embd % config.n_head == 0
+        assert config.n_embd % config.n_head == 0, "Embedding dimension must be divisible by the number of heads"
         self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd, bias=config.bias)
         self.c_proj = nn.Linear(config.n_embd, config.n_embd, bias=config.bias)
         self.attn_dropout = nn.Dropout(config.dropout)
         self.resid_dropout = nn.Dropout(config.dropout)
         self.n_head = config.n_head
         self.n_embd = config.n_embd
-        self.dropout = config.dropout
         self.head_size = config.n_embd // config.n_head
-        self.rotary_emb = RotaryPositionalEmbeddings(dim=self.head_size,max_seq_len=1001)
-        #self.kv_cache = KVCache(max_batch_size=256,max_seq_length=1001,n_head=self.n_head,
-        #    head_size=self.head_size,
-        #    device='cuda'
-        #)
-
-            
+        self.rotary_emb = RotaryPositionalEmbeddings(dim=self.head_size, max_seq_len=1001)
+        # KV Cache
+        self.kv_cache = KVCache(
+            max_batch_size=20,
+            max_seq_length=1001,
+            n_head=self.n_head,
+            head_size=self.head_size,
+            device=config.device) 
     def forward(self, x, attn_mask, position=None, use_cache=False):
         B, T, C = x.size()
-
+        # Compute Q, K, V projections
         q, k, v = self.c_attn(x).split(self.n_embd, dim=2)
-        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
-        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
-        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
-        
+        q = q.view(B, T, self.n_head, self.head_size).transpose(1, 2)
+        k = k.view(B, T, self.n_head, self.head_size).transpose(1, 2)
+        v = v.view(B, T, self.n_head, self.head_size).transpose(1, 2)
         if use_cache:
-            q = self.rotary_emb(q, input_pos=self.kv_cache.src_len + position)
-            k = self.rotary_emb(k, input_pos=self.kv_cache.src_len + position)
-            self.kv_cache.update_source(k, v, position)
-            k, v = self.kv_cache.get_kv(position)
+            if position == 0:
+                # First iteration: full source sequence
+                q = self.rotary_emb(q.transpose(1, 2)).transpose(1, 2)
+                k = self.rotary_emb(k.transpose(1, 2)).transpose(1, 2)
+                self.kv_cache.update_source(k, v)
+            else:
+                # Subsequent iterations: single token
+                q = self.rotary_emb(q.transpose(1, 2), input_pos=self.kv_cache.src_len).transpose(1, 2)
+                k = self.rotary_emb(k.transpose(1, 2), input_pos=self.kv_cache.src_len).transpose(1, 2)
+                self.kv_cache.update_source(k, v)
+                
+            k, v = self.kv_cache.get_kv()
+            attn_mask = attn_mask[:, :, :q.size(-2), :k.size(-2)]
+            print(f"attn_mask: {attn_mask.shape}")
         else:
-            q = self.rotary_emb(q)
-            k = self.rotary_emb(k)
-        
-        y = compute_attention_with_mask(
-            q, k, v,
-            B=B, T=T,
-            attn_mask=attn_mask,
-            device=x.device,
-            use_cache=use_cache,
-            position=position,
-            src_len=self.kv_cache.src_len if use_cache else None
-        )
-        
+            # Non-cached mode: apply rotary embeddings without caching
+            q = self.rotary_emb(q.transpose(1, 2)).transpose(1, 2)
+            k = self.rotary_emb(k.transpose(1, 2)).transpose(1, 2)
+        y = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
         y = y.transpose(1, 2).contiguous().view(B, T, C)
         y = self.resid_dropout(self.c_proj(y))
         return y
