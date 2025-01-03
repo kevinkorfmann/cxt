@@ -1,0 +1,146 @@
+# TokenFreeDecoder
+import torch
+import numpy as np
+import lightning as L
+torch.random.manual_seed(0)
+from dataclasses import dataclass
+from cxt.model import TokenFreeDecoder
+from torch.utils.data import DataLoader
+from cxt.dataset import LazyDataset
+import math
+
+def generate_causal_mask(seq_len, device):
+    mask = torch.tril(torch.ones((seq_len, seq_len), device=device)).bool()
+    return mask.unsqueeze(0).unsqueeze(0)  # [1, 1, T, T]
+
+num_gpus = 4
+config = {
+    'training': {
+        'max_steps': 50_000 * 2,
+        'max_lr': 3e-4,
+        'min_lr': 3e-4 * 0.1,
+        'warmup_iters': 10,
+        'lr_decay_iters': 50_000 * 3,
+        'batch_size': 196, 
+        'grad_accum_steps': 1, 
+        'weight_decay': 0.1,
+        'betas': (0.9, 0.95),
+        'num_workers': num_gpus,
+    }
+}
+
+@dataclass
+class TokenFreeDecoderConfig:
+    num_samples: int = 50
+    sample_scale_embd: int = 2
+    output_dim: int = 256+2
+    n_embd: int = 400
+    combined_dim: int = 1001
+    n_layer: int = 6
+    bias: bool = False
+    dropout: float = 0.1
+    n_head: int = 4
+    device: str = "cuda"
+
+class LitTokenFreeDecoder(L.LightningModule):
+    def __init__(self, gpt_config):
+        super().__init__()
+        self.model = TokenFreeDecoder(gpt_config)
+        self.training_config = config['training']
+        self.save_hyperparameters(ignore=['model'])
+    def training_step(self, batch, batch_idx):
+        x, y = batch
+        #with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
+        attn_mask = generate_causal_mask(1001, 'cuda')
+        attn_mask = attn_mask.repeat(x.size(0), 1, 1, 1)
+        logits, loss = self.model(x, y, attn_mask)
+        # Log metrics
+        self.log("train_loss", loss, prog_bar=True)
+        self.log("lr", self.trainer.optimizers[0].param_groups[0]['lr'], prog_bar=True)
+        return loss
+    def validation_step(self, batch, batch_idx):
+        x, y = batch
+        attn_mask = generate_causal_mask(1001, 'cuda')
+        attn_mask = attn_mask.repeat(x.size(0), 1, 1, 1)
+        #with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
+        logits, loss = self.model(x, y, attn_mask)
+        self.log("val_loss", loss, prog_bar=True, sync_dist=True)
+        return loss
+    def configure_optimizers(self):
+        optimizer = self.model.configure_optimizers(
+            weight_decay=self.training_config['weight_decay'],
+            learning_rate=self.training_config['max_lr'],
+            betas=self.training_config['betas'],
+            device_type=self.device.type
+        )
+        scheduler = {
+            'scheduler': torch.optim.lr_scheduler.LambdaLR(
+                optimizer,
+                lr_lambda=self._get_lr_schedule_function
+            ),
+            'interval': 'step',
+            'frequency': 1
+        }
+        return [optimizer], [scheduler]
+
+    def _get_lr_schedule_function(self, current_step):
+        config = self.training_config
+        # Linear warmup
+        if current_step < config['warmup_iters']:
+            return float(current_step) / float(max(1, config['warmup_iters']))
+        # Cosine decay
+        if current_step > config['lr_decay_iters']:
+            return config['min_lr'] / config['max_lr']
+        decay_ratio = (current_step - config['warmup_iters']) / (
+            config['lr_decay_iters'] - config['warmup_iters']
+        )
+        coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
+        return config['min_lr'] / config['max_lr'] + coeff * (1.0 - config['min_lr'] / config['max_lr'])
+
+
+if __name__ == "__main__":
+    #train_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_6_grad", split='train')
+    #test_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_6_grad",split='test')
+    #train_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_7_grad", split='train')
+    #test_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_7_grad",split='test')
+    
+    train_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_base_dataset", split='train')
+    test_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_base_dataset",split='test')
+    print(f"training dataset {len(train_dataset)} samples")
+    print(f"test dataset {len(test_dataset)} samples")
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=config['training']['batch_size'],
+        num_workers=config['training']['num_workers'],
+        pin_memory=True,
+        shuffle=False,
+        persistent_workers=True,
+    )
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=config['training']['batch_size'],
+        num_workers=config['training']['num_workers'],
+        pin_memory=True,
+        shuffle=False,
+        persistent_workers=True
+    )
+    gpt_config = TokenFreeDecoderConfig()
+    lit_model = LitTokenFreeDecoder(gpt_config)
+    
+
+    torch.set_float32_matmul_precision('medium')
+    trainer = L.Trainer(
+        max_epochs=10,
+        accelerator="auto",
+        devices=[0, 1, 2],
+        precision="bf16-mixed",
+        strategy="ddp", # not in interactive mode
+        #detect_anomaly=True,
+        #gradient_clip_val=1.0, # because of fused optim 
+        accumulate_grad_batches=config['training']['grad_accum_steps']
+    )
+    trainer.fit(
+        model=lit_model,
+        train_dataloaders=train_loader,
+        val_dataloaders=test_loader
+    )

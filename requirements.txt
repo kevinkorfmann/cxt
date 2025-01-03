@@ -9,3 +9,6 @@ torch
 torchao
 torchtune
 
+lightning
+msprime
+scipy

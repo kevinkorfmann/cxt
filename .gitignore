@@ -1,4 +1,7 @@
 .DS_Store
 .vscode
 cxt.egg-info
-nbs/*
+nbs
+tmp
+cxt/lightning_logs
+cxt/__pycache__
