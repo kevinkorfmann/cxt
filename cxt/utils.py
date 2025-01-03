@@ -3,6 +3,7 @@ import tskit
 from typing import List, Tuple
 from scipy.interpolate import interp1d
 import numpy as np
+import torch
 
 retrieve_site_positions = lambda ts: np.array([site.position for site in ts.sites()])
 xor = lambda a, b: (a^b).astype(int)
@@ -128,6 +129,28 @@ def interpolate_tmrcas(ts: tskit.TreeSequence, window_size: int) -> np.ndarray:
     return y_tmrca_interpolated
 
 
+
+def ts2input(ts, pivot_A, pivot_B):
+    Xxor = ts2X_vectorized(ts, window_size=2000, xor_ops=xor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
+    Xxnor = ts2X_vectorized(ts, window_size=2000, xor_ops=xnor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
+    src = np.stack([Xxor, Xxnor], axis=0).astype(np.float16)
+    tgt = np.log(interpolate_tmrcas(ts.simplify(samples=[pivot_A, pivot_B]), window_size=2000)).astype(np.float16)
+    src = torch.from_numpy(src).float()
+    src = torch.log1p(src)
+    tgt = np.array(discretize(tgt, np.linspace(3, 14, 256)))
+    tgt = torch.from_numpy(tgt).long() + 2
+    tgt = torch.cat([torch.tensor([1]), tgt])
+    return src, tgt
+
+def generate_causal_mask(seq_len, device):
+    mask = torch.tril(torch.ones((seq_len, seq_len), device=device)).bool()
+    return mask.unsqueeze(0).unsqueeze(0)  # [1, 1, T, T]
+
+
+
+
+TIMES = np.linspace(3, 14, 256)
+
 def create_sawtooth_demogaphy_object(Ne = 2*10**4, magnitue=4):
     demography = msprime.Demography()
     demography.add_population(initial_size=(Ne))
@@ -154,3 +177,4 @@ def population_time(time_rate:float=0.06, tmax:int = 510_000,
                               range(num_time_windows)], 1, axis=0)
     population_time[0] = 1
     return population_time
+
