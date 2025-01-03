@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from cxt.kv_cache import KVCache
 from torchtune.modules import RotaryPositionalEmbeddings
 
 
@@ -156,8 +155,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchtune.modules import RotaryPositionalEmbeddings
 
+
 class CausalSelfAttention(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, i):
         super().__init__()
         assert config.n_embd % config.n_head == 0, "Embedding dimension must be divisible by the number of heads"
         self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd, bias=config.bias)
@@ -168,73 +168,56 @@ class CausalSelfAttention(nn.Module):
         self.n_embd = config.n_embd
         self.head_size = config.n_embd // config.n_head
         self.rotary_emb = RotaryPositionalEmbeddings(dim=self.head_size, max_seq_len=1001)
+        self.layer_index = torch.tensor(i)
         # KV Cache
-        self.kv_cache = KVCache(
-            max_batch_size=20,
-            max_seq_length=1001,
-            n_head=self.n_head,
-            head_size=self.head_size,
-            device=config.device) 
+        self.cache_k = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size)).cuda()
+        self.cache_v = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size)).cuda()
+
     def forward(self, x, attn_mask, position=None, use_cache=False):
         B, T, C = x.size()
-        # Compute Q, K, V projections
         q, k, v = self.c_attn(x).split(self.n_embd, dim=2)
         q = q.view(B, T, self.n_head, self.head_size).transpose(1, 2)
         k = k.view(B, T, self.n_head, self.head_size).transpose(1, 2)
         v = v.view(B, T, self.n_head, self.head_size).transpose(1, 2)
-        if use_cache:
-            if position == 0:
-                # First iteration: full source sequence
-                q = self.rotary_emb(q.transpose(1, 2)).transpose(1, 2)
-                k = self.rotary_emb(k.transpose(1, 2)).transpose(1, 2)
-                self.kv_cache.update_source(k, v)
-            else:
-                # Subsequent iterations: single token
-                q = self.rotary_emb(q.transpose(1, 2), input_pos=self.kv_cache.src_len).transpose(1, 2)
-                k = self.rotary_emb(k.transpose(1, 2), input_pos=self.kv_cache.src_len).transpose(1, 2)
-                self.kv_cache.update_source(k, v)
-                
-            k, v = self.kv_cache.get_kv()
-            attn_mask = attn_mask[:, :, :q.size(-2), :k.size(-2)]
-            print(f"attn_mask: {attn_mask.shape}")
+     
+        if position == 0:
+            q = self.rotary_emb(q.transpose(1, 2), input_pos=torch.arange(T, device=q.device)).transpose(1, 2)
+            k = self.rotary_emb(k.transpose(1, 2), input_pos=torch.arange(T, device=k.device)).transpose(1, 2)
+            self.cache_k[:B, :, :T, :] = k
+            self.cache_v[:B, :, :T, :] = v
         else:
-            # Non-cached mode: apply rotary embeddings without caching
-            q = self.rotary_emb(q.transpose(1, 2)).transpose(1, 2)
-            k = self.rotary_emb(k.transpose(1, 2)).transpose(1, 2)
+            q = self.rotary_emb(q.transpose(1, 2), input_pos=position).transpose(1, 2)
+            k = self.rotary_emb(k.transpose(1, 2), input_pos=position).transpose(1, 2)
+            self.cache_k[:B, :, position:position + T, :] = k
+            self.cache_v[:B, :, position:position + T, :] = v
+            k = self.cache_k[:B, :, :position + T, :]
+            v = self.cache_v[:B, :, :position + T, :]
+
+        if position == 0: attn_mask = attn_mask[:, :, :q.size(-2), :k.size(-2)]
+        else: attn_mask = attn_mask[:, :, position, :k.size(-2)].unsqueeze(2)
+
         y = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
-        y = y.transpose(1, 2).contiguous().view(B, T, C)
+        y = y.transpose(1, 2).contiguous().view(B, -1, C)
         y = self.resid_dropout(self.c_proj(y))
         return y
 
-
-
-def compute_attention_with_mask(q, k, v, B, T, attn_mask, device, use_cache, position=None, src_len=None):
-    """Attention computation"""
-    if use_cache:
-        total_len = k.size(2)
-        attn_mask = torch.zeros(1, 1, 1, total_len, device=device).bool()
-        attn_mask[:, :, :, :src_len] = True  # Full source attention
-        if position >= 0:
-            # Causal mask for generated tokens
-            attn_mask[:, :, :, src_len:src_len + position + 1] = True
-        return F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
-    else:
-        return F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
-
-
-
-
 class Block(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, i):
         super().__init__()
         self.ln_1 = LayerNorm(config.n_embd, use_bias=config.bias)
-        self.attn = CausalSelfAttention(config)
+        self.attn = CausalSelfAttention(config, i)
         self.ln_2 = LayerNorm(config.n_embd, use_bias=config.bias)
         self.mlp = MLP(config)
         
     def forward(self, x, attn_mask, position=None, use_cache=False):
-        x = x + self.attn(self.ln_1(x), attn_mask=attn_mask, position=position, use_cache=use_cache)
+        x = x + self.attn(self.ln_1(x),
+        attn_mask=attn_mask, position=position, use_cache=use_cache)
         x = x + self.mlp(self.ln_2(x))
         return x
+
+
+
+
+
 
 
