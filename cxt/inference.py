@@ -27,9 +27,9 @@ def generate(model, src, B=20, device="cuda"):
     idx = torch.ones(B, 1).long().to(device)
     with torch.no_grad():
         logits = model(src, None, attn_mask, calculate_loss=False, use_cache=True, position=0)
-        idx = torch.ones(B, 1).long().to("cuda")
+        idx = torch.ones(B, 1).long().to(device)
         top_k = 50
-        for i in range(501, 1001):
+        for i in range(500, 1000):
                 #with torch.autocast(device_type=device, dtype=torch.bfloat16):
                     logits = model(src, idx[:, -1:], attn_mask, calculate_loss=False, use_cache=True, position=i)
                     logits = logits[:, -1, :]
