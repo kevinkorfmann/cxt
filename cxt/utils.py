@@ -18,7 +18,7 @@ def simulate_parameterized_tree_sequence(
         seed,
         samples=25,
         population_size=2e4,
-        sequence_length=2e6,
+        sequence_length=1e6,
         recombination_rate=1.28e-8,
         ploidy=2,
         mutation_rate=1.29e-8,
@@ -59,8 +59,6 @@ def calculate_window_sfs_vectorized(site_positions, pivot_frequencies, window_si
 
 
 w_multipliers = np.array([2, 8, 32, 64])
-
-
 def ts2X_vectorized(ts, window_size=4000, step_size=2000, xor_ops=xor, pivot_A=0, pivot_B=1):
     """Memory-efficient conversion of tree sequence to feature matrix"""
     site_positions = retrieve_site_positions(ts)
@@ -140,6 +138,16 @@ def ts2input(ts, pivot_A, pivot_B):
     tgt = np.array(discretize(tgt, np.linspace(3, 14, 256)))
     tgt = torch.from_numpy(tgt).long() + 2
     tgt = torch.cat([torch.tensor([1]), tgt])
+    return src, tgt
+
+def ts2input_numpy(ts, pivot_A, pivot_B):
+    Xxor = ts2X_vectorized(ts, window_size=2000, xor_ops=xor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
+    Xxnor = ts2X_vectorized(ts, window_size=2000, xor_ops=xnor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
+    src = np.stack([Xxor, Xxnor], axis=0).astype(np.float16)
+    tgt = np.log(interpolate_tmrcas(ts.simplify(samples=[pivot_A, pivot_B]), window_size=2000)).astype(np.float16)
+    src = np.log1p(src)  # Log transformation
+    tgt = np.array(discretize(tgt, np.linspace(3, 14, 256)))
+    tgt = np.concatenate([[1], tgt + 2])  # Add special token and shift indices
     return src, tgt
 
 def generate_causal_mask(seq_len, device):
