@@ -8,13 +8,16 @@ Welcome to cxt's documentation!
 
 ``cxt`` stands for coalescence x translation and thereby proposing a sequence or language modelling approach to population genetic inference.
 
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   
 
+   demo
    modules
+   simulations
+   utils
 
 
 

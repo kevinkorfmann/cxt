@@ -2,11 +2,10 @@
 Modules/API
 ===========
 
-cxt.modules
+cxt.simulation
 -----------
-.. automodule:: cxt.modules
+.. automodule:: cxt.simulation
    :members:
    :undoc-members:
    :show-inheritance:
-
 

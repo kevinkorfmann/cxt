@@ -9,10 +9,4 @@ cxt.modules
    :undoc-members:
    :show-inheritance:
 
-cxt.kv_cache
-------------
-.. automodule:: cxt.kv_cache
-   :members:
-   :undoc-members:
-   :show-inheritance:
 

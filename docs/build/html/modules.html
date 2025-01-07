@@ -19,7 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Welcome to cxt’s documentation!" href="index.html" /> 
+    <link rel="next" title="Simulations/API" href="simulations.html" />
+    <link rel="prev" title="Demonstrations" href="demo.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -43,8 +44,17 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="demo.html">Demonstrations</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Modules/API</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-cxt.modules">cxt.modules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.modules.Block"><code class="docutils literal notranslate"><span class="pre">Block</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cxt.modules.Block.forward"><code class="docutils literal notranslate"><span class="pre">Block.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.modules.CausalSelfAttention"><code class="docutils literal notranslate"><span class="pre">CausalSelfAttention</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cxt.modules.CausalSelfAttention.forward"><code class="docutils literal notranslate"><span class="pre">CausalSelfAttention.forward()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.modules.LayerNorm"><code class="docutils literal notranslate"><span class="pre">LayerNorm</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#cxt.modules.LayerNorm.weight"><code class="docutils literal notranslate"><span class="pre">LayerNorm.weight</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#cxt.modules.LayerNorm.bias"><code class="docutils literal notranslate"><span class="pre">LayerNorm.bias</span></code></a></li>
@@ -77,18 +87,10 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#module-cxt.kv_cache">cxt.kv_cache</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#cxt.kv_cache.KVCache"><code class="docutils literal notranslate"><span class="pre">KVCache</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#cxt.kv_cache.KVCache.clear"><code class="docutils literal notranslate"><span class="pre">KVCache.clear()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#cxt.kv_cache.KVCache.get_kv"><code class="docutils literal notranslate"><span class="pre">KVCache.get_kv()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#cxt.kv_cache.KVCache.update_source"><code class="docutils literal notranslate"><span class="pre">KVCache.update_source()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#cxt.kv_cache.KVCache.update_target"><code class="docutils literal notranslate"><span class="pre">KVCache.update_target()</span></code></a></li>
 </ul>
 </li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="simulations.html">Simulations/API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils/API</a></li>
 </ul>
 
         </div>
@@ -119,6 +121,46 @@
 <h1>Modules/API<a class="headerlink" href="#modules-api" title="Link to this heading"></a></h1>
 <section id="module-cxt.modules">
 <span id="cxt-modules"></span><h2>cxt.modules<a class="headerlink" href="#module-cxt.modules" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="cxt.modules.Block">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cxt.modules.</span></span><span class="sig-name descname"><span class="pre">Block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/modules.html#Block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.modules.Block" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cxt.modules.Block.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attn_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/modules.html#Block.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.modules.Block.forward" title="Link to this definition"></a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cxt.modules.CausalSelfAttention">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cxt.modules.</span></span><span class="sig-name descname"><span class="pre">CausalSelfAttention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/modules.html#CausalSelfAttention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.modules.CausalSelfAttention" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cxt.modules.CausalSelfAttention.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attn_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/modules.html#CausalSelfAttention.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.modules.CausalSelfAttention.forward" title="Link to this definition"></a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="cxt.modules.LayerNorm">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cxt.modules.</span></span><span class="sig-name descname"><span class="pre">LayerNorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ndim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/modules.html#LayerNorm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.modules.LayerNorm" title="Link to this definition"></a></dt>
@@ -435,104 +477,14 @@ registered hooks while the latter silently ignores them.</p>
 </dd></dl>
 
 </section>
-<section id="module-cxt.kv_cache">
-<span id="cxt-kv-cache"></span><h2>cxt.kv_cache<a class="headerlink" href="#module-cxt.kv_cache" title="Link to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="cxt.kv_cache.KVCache">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cxt.kv_cache.</span></span><span class="sig-name descname"><span class="pre">KVCache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_seq_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_head</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/kv_cache.html#KVCache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.kv_cache.KVCache" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A cache for storing and concatenating attention key/value tensors during
-incremental decoding (e.g., in autoregressive models).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>max_batch_size</strong> (<em>int</em>) – Maximum batch size.</p></li>
-<li><p><strong>max_seq_length</strong> (<em>int</em>) – Maximum sequence length.</p></li>
-<li><p><strong>n_head</strong> (<em>int</em>) – Number of attention heads.</p></li>
-<li><p><strong>head_size</strong> (<em>int</em>) – Dimension of each attention head.</p></li>
-<li><p><strong>device</strong> (<em>str</em><em> or </em><em>torch.device</em>) – Device on which to allocate the tensors (e.g., “cpu” or “cuda”).</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">src_key_cache,</span> <span class="pre">src_value_cache</span></span></dt>
-<dd><p>Source caches for key and value.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>torch.Tensor</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">tgt_key_cache,</span> <span class="pre">tgt_value_cache</span></span></dt>
-<dd><p>Target caches for key and value.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>torch.Tensor</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">src_len,</span> <span class="pre">tgt_len</span></span></dt>
-<dd><p>Track the number of valid tokens in the source/target caches.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">kvcache</span> <span class="o">=</span> <span class="n">KVCache</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">src_k</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">src_v</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">kvcache</span><span class="o">.</span><span class="n">update_source</span><span class="p">(</span><span class="n">src_k</span><span class="p">,</span> <span class="n">src_v</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">tgt_k</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">tgt_v</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">kvcache</span><span class="o">.</span><span class="n">update_target</span><span class="p">(</span><span class="n">tgt_k</span><span class="p">,</span> <span class="n">tgt_v</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">full_k</span><span class="p">,</span> <span class="n">full_v</span> <span class="o">=</span> <span class="n">kvcache</span><span class="o">.</span><span class="n">get_kv</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">full_k</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">full_v</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="go">torch.Size([2, 2, 4, 4]) torch.Size([2, 2, 4, 4])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">kvcache</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">kvcache</span><span class="o">.</span><span class="n">src_len</span><span class="p">,</span> <span class="n">kvcache</span><span class="o">.</span><span class="n">tgt_len</span><span class="p">)</span>
-<span class="go">0 0</span>
-</pre></div>
-</div>
-<dl class="py method">
-<dt class="sig sig-object py" id="cxt.kv_cache.KVCache.clear">
-<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/kv_cache.html#KVCache.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.kv_cache.KVCache.clear" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cxt.kv_cache.KVCache.get_kv">
-<span class="sig-name descname"><span class="pre">get_kv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/kv_cache.html#KVCache.get_kv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.kv_cache.KVCache.get_kv" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cxt.kv_cache.KVCache.update_source">
-<span class="sig-name descname"><span class="pre">update_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/kv_cache.html#KVCache.update_source"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.kv_cache.KVCache.update_source" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cxt.kv_cache.KVCache.update_target">
-<span class="sig-name descname"><span class="pre">update_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/kv_cache.html#KVCache.update_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.kv_cache.KVCache.update_target" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to cxt’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="demo.html" class="btn btn-neutral float-left" title="Demonstrations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="simulations.html" class="btn btn-neutral float-right" title="Simulations/API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -1,12 +1,11 @@
 
-Modules/API
+Utils/API
 ===========
 
-cxt.modules
------------
-.. automodule:: cxt.modules
+cxt.utils
+---------
+.. automodule:: cxt.utils
    :members:
    :undoc-members:
    :show-inheritance:
-
 
