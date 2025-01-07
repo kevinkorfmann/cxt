@@ -3,11 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to cxt's documentation!
-===============================
-
 cxt(kit): Coalescence x Translation (toolkit)
----------------------------------------------
+=============================================
 
 
 ``cxt`` stands for coalescence x translation and thereby proposing a sequence or language modelling approach to population genetic inference.
