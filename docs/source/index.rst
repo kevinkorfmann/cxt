@@ -6,6 +6,10 @@
 Welcome to cxt's documentation!
 ===============================
 
+cxt(kit): Coalescence x Translation (toolkit)
+---------------------------------------------
+
+
 ``cxt`` stands for coalescence x translation and thereby proposing a sequence or language modelling approach to population genetic inference.
 
 
