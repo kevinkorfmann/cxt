@@ -8,6 +8,7 @@ from cxt.utils import xor, xnor
 from multiprocessing import Pool
 from cxt.utils import ts2X_vectorized
 from cxt.utils import simulate_parameterized_tree_sequence, interpolate_tmrcas
+import argparse
 
 
 def create_sawtooth_demogaphy_object(Ne = 2*10**4, magnitue=4):
@@ -30,9 +31,32 @@ def create_sawtooth_demogaphy_object(Ne = 2*10**4, magnitue=4):
     return demography
 
 
-def generate_data(i, pivot_A=0, pivot_B=1, ts_simulation_func=None):
 
-    # ts simulation
+def generate_data(i, pivot_A=0, pivot_B=1, ts_simulation_func=None):
+    def generate_data(i: int, pivot_A: int = 0, pivot_B: int = 1, ts_simulation_func: callable = None) -> tuple:
+        """
+        Generate data for simulation.
+        Parameters
+        ----------
+        i : int
+            A seed integer parameter used by the ts_simulation_func.
+        pivot_A : int, optional
+            The first pivot index for processing, by default 0.
+        pivot_B : int, optional
+            The second pivot index for processing, by default 1.
+        ts_simulation_func : callable, optional
+            A function to simulate tree sequence data, by default None.
+        Returns
+        -------
+        tuple
+            A tuple containing:
+            - X : np.ndarray
+                A 3D array with processed data using XOR and XNOR operations.
+            - y : np.ndarray
+                A 1D array with log-interpolated TMRCA values.
+        """
+
+
     ts = ts_simulation_func(i)
 
     # processing
@@ -48,7 +72,33 @@ def save_batch(data, idx, output_dir):
     np.save(f'{output_dir}/X_{idx}.npy', np.stack([X for X, _ in data]))
     np.save(f'{output_dir}/y_{idx}.npy', np.stack([y for _, y in data]))
 
-def process_batches(num_samples, start_batch, batch_size, num_processes, output_dir, pivot_A, pivot_B, ts_simulation_func):
+def process_batches(num_samples: int, start_batch: int, batch_size: int, num_processes: int, output_dir: str, pivot_A: int, pivot_B: int, ts_simulation_func: callable) -> None:
+    """
+    Process data in batches using multiprocessing and save the results.
+
+    Parameters
+    ----------
+    num_samples : int
+        Total number of samples to process.
+    start_batch : int
+        The starting batch index.
+    batch_size : int
+        The number of samples per batch.
+    num_processes : int
+        The number of processes to use for multiprocessing.
+    output_dir : str
+        The directory where the output batches will be saved.
+    pivot_A : int, optional
+            The first pivot index for processing, by default 0.
+    pivot_B : int, optional
+            The second pivot index for processing, by default 1.
+    ts_simulation_func : callable
+        The simulation function to generate tree sequence data.
+
+    Returns
+    -------
+    None
+    """
     with Pool(num_processes) as pool:
         batch = []
         batch_idx = 0 + start_batch
@@ -66,10 +116,29 @@ def process_batches(num_samples, start_batch, batch_size, num_processes, output_
 
 if __name__ == '__main__':
 
-    num_processes = 30
-    num_samples = 2_000_000
-    batch_size = 1000
-    start_batch = 0
-    pivot_A, pivot_B = 0, 1
-    #simulate_parameterized_tree_sequence_sawtooth = partial(simulate_parameterized_tree_sequence, demography=create_sawtooth_demogaphy_object(Ne=20e3, magnitue=3))
-    process_batches(num_samples, start_batch, batch_size, num_processes, '/sietch_colab/kkor/tiny_batches_base_dataset', pivot_A, pivot_B, simulate_parameterized_tree_sequence)
+    parser = argparse.ArgumentParser(description='Process simulation parameters.')
+    parser.add_argument('--num_processes', type=int, default=30, help='Number of processes to use')
+    parser.add_argument('--num_samples', type=int, default=2_000_000, help='Number of samples to generate')
+    parser.add_argument('--batch_size', type=int, default=1000, help='Batch size for saving data')
+    parser.add_argument('--start_batch', type=int, default=0, help='Starting batch index')
+    parser.add_argument('--pivot_A', type=int, default=0, help='Pivot A index')
+    parser.add_argument('--pivot_B', type=int, default=1, help='Pivot B index')
+    parser.add_argument('--data_dir', type=str, default='/sietch_colab/kkor/tiny_batches_base_dataset', help='Directory to save data')
+    parser.add_argument('--scenario', type=str, choices=['constant', 'sawtooth'], default='constant', help='Scenario type')
+    args = parser.parse_args()
+
+    num_processes = args.num_processes
+    num_samples = args.num_samples
+    batch_size = args.batch_size
+    start_batch = args.start_batch
+    pivot_A = args.pivot_A
+    pivot_B = args.pivot_B
+    data_dir = args.data_dir
+    scenario = args.scenario
+
+    if scenario == "constant":
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence)
+
+    elif scenario == "sawtooth":
+        simulate_parameterized_tree_sequence_sawtooth = partial(simulate_parameterized_tree_sequence, demography=create_sawtooth_demogaphy_object(Ne=20e3, magnitue=3))
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence_sawtooth)
