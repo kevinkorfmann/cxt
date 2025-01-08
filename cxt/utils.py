@@ -8,6 +8,7 @@ import torch
 retrieve_site_positions = lambda ts: np.array([site.position for site in ts.sites()])
 xor = lambda a, b: (a^b).astype(int)
 xnor = lambda a, b: (1 - xor(a, b)).astype(int)
+mse = lambda yhat, ytrue: ((yhat - ytrue)**2).mean()
 
 def discretize(sequence, population_time):
     indices = np.searchsorted(population_time, sequence, side="right") - 1
@@ -185,4 +186,23 @@ def population_time(time_rate:float=0.06, tmax:int = 510_000,
                               range(num_time_windows)], 1, axis=0)
     population_time[0] = 1
     return population_time
+
+def post_process(tgt, sequence, TIMES):
+    yhat = sequence[:, 1:].cpu().numpy() - 2
+    ytrue = tgt[:, 1:].cpu().numpy() - 2
+    return TIMES[yhat], TIMES[ytrue]
+
+def process_pair(args):
+    ts, pivot_A, pivot_B = args
+    return ts2input_numpy(ts, pivot_A, pivot_B)
+
+
+def decreasing_mses(yhats, ytrues):
+    mse_values = []
+    for i in range(1, len(yhats) + 1):
+        yhat_mean = sum(yhats[:i]) / i
+        ytrue_mean = sum(ytrues[:i]) / i
+        mse_values.append(mse(yhat_mean, ytrue_mean))
+    return mse_values
+
 

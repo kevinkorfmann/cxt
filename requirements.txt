@@ -5,6 +5,7 @@ pytest
 
 numpy
 torch
+torchtune
 
 torchao
 torchtune
