@@ -41,7 +41,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules/API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API documentation</a></li>
 </ul>
 
         </div>
@@ -82,7 +85,7 @@
 
 
 <div class="viewcode-block" id="create_sawtooth_demogaphy_object">
-<a class="viewcode-back" href="../../modules.html#cxt.simulation.create_sawtooth_demogaphy_object">[docs]</a>
+<a class="viewcode-back" href="../../api.html#cxt.simulation.create_sawtooth_demogaphy_object">[docs]</a>
 <span class="k">def</span> <span class="nf">create_sawtooth_demogaphy_object</span><span class="p">(</span><span class="n">Ne</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="mi">10</span><span class="o">**</span><span class="mi">4</span><span class="p">,</span> <span class="n">magnitue</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
     <span class="n">demography</span> <span class="o">=</span> <span class="n">msprime</span><span class="o">.</span><span class="n">Demography</span><span class="p">()</span>
     <span class="n">demography</span><span class="o">.</span><span class="n">add_population</span><span class="p">(</span><span class="n">initial_size</span><span class="o">=</span><span class="p">(</span><span class="n">Ne</span><span class="p">))</span>
@@ -106,7 +109,7 @@
 
 
 <div class="viewcode-block" id="generate_data">
-<a class="viewcode-back" href="../../modules.html#cxt.simulation.generate_data">[docs]</a>
+<a class="viewcode-back" href="../../api.html#cxt.simulation.generate_data">[docs]</a>
 <span class="k">def</span> <span class="nf">generate_data</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ts_simulation_func</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">generate_data</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ts_simulation_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -144,7 +147,7 @@
 
 
 <div class="viewcode-block" id="save_batch">
-<a class="viewcode-back" href="../../modules.html#cxt.simulation.save_batch">[docs]</a>
+<a class="viewcode-back" href="../../api.html#cxt.simulation.save_batch">[docs]</a>
 <span class="k">def</span> <span class="nf">save_batch</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s1">/X_</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s1">.npy&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">X</span> <span class="k">for</span> <span class="n">X</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]))</span>
@@ -152,7 +155,7 @@
 
 
 <div class="viewcode-block" id="process_batches">
-<a class="viewcode-back" href="../../modules.html#cxt.simulation.process_batches">[docs]</a>
+<a class="viewcode-back" href="../../api.html#cxt.simulation.process_batches">[docs]</a>
 <span class="k">def</span> <span class="nf">process_batches</span><span class="p">(</span><span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">start_batch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_processes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ts_simulation_func</span><span class="p">:</span> <span class="nb">callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Process data in batches using multiprocessing and save the results.</span>

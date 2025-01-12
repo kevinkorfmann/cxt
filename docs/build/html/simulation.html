@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modules/API &mdash; cxt 0.1 documentation</title>
+  <title>Simulation &mdash; cxt 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -19,7 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Modules/API" href="modules.html" /> 
+    <link rel="next" title="API documentation" href="api.html" />
+    <link rel="prev" title="Tutorial" href="tutorial.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -43,11 +44,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules/API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules/API</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#cxt-simulation">cxt.simulation</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a></li>
 </ul>
 
         </div>
@@ -64,7 +64,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Modules/API</li>
+      <li class="breadcrumb-item active">Simulation</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/simulation.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -74,18 +74,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="modules-api">
-<h1>Modules/API<a class="headerlink" href="#modules-api" title="Link to this heading"></a></h1>
-<section id="cxt-simulation">
-<h2>cxt.simulation<a class="headerlink" href="#cxt-simulation" title="Link to this heading"></a></h2>
-</section>
+  <section id="simulation">
+<h1>Simulation<a class="headerlink" href="#simulation" title="Link to this heading"></a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">cxt</span></code> is trained on simulated data. The following code demonstrates how to simulate data for training and inference.</p>
+<p>Constant Demography Dataset (CDD):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>simulate.py<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--num_processes<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--num_samples<span class="w"> </span>2_000_000<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--batch_size<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--start_batch<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--pivot_A<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--pivot_B<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--data_dir<span class="w"> </span>/sietch_colab/kkor/tiny_batches_base_dataset<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--scenario<span class="w"> </span>constant
+</pre></div>
+</div>
+<p>Sawtooth Demography Dataset (SDD) for fine-tuning:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>simulate.py<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--num_processes<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--num_samples<span class="w"> </span>200_000<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--batch_size<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--start_batch<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--pivot_A<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--pivot_B<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--data_dir<span class="w"> </span>/sietch_colab/kkor/tiny_batches_sawtooth_dataset<span class="w"> </span><span class="se">\\</span>
+<span class="w">    </span>--scenario<span class="w"> </span>sawtooth
+</pre></div>
+</div>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="modules.html" class="btn btn-neutral float-left" title="Modules/API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

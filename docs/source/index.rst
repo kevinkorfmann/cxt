@@ -14,11 +14,12 @@ cxt(kit): Coalescence x Translation (toolkit)
    :maxdepth: 2
    :caption: Contents:
 
-
-   demo
-   modules
-   simulations
-   utils
+   
+   installation
+   tutorial
+   simulation
+   training
+   api
 
 
 

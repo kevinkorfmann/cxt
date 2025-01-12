@@ -8,6 +8,7 @@ from cxt.model import TokenFreeDecoder
 from torch.utils.data import DataLoader
 from cxt.dataset import LazyDataset
 import math
+import argparse
 
 def generate_causal_mask(seq_len, device):
     mask = torch.tril(torch.ones((seq_len, seq_len), device=device)).bool()
@@ -99,13 +100,13 @@ class LitTokenFreeDecoder(L.LightningModule):
 
 
 if __name__ == "__main__":
-    #train_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_6_grad", split='train')
-    #test_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_6_grad",split='test')
-    #train_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_7_grad", split='train')
-    #test_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_7_grad",split='test')
+    parser = argparse.ArgumentParser(description="Train TokenFreeDecoder model")
+    parser.add_argument('--dataset_path', type=str, default='/sietch_colab/kkor/tiny_batches_base_dataset', help='Path to the dataset')
+    args = parser.parse_args()
+    dataset_path = args.dataset_path
     
-    train_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_base_dataset", split='train')
-    test_dataset = LazyDataset("/sietch_colab/kkor/tiny_batches_base_dataset",split='test')
+    train_dataset = LazyDataset(dataset_path, split='train')
+    test_dataset = LazyDataset(dataset_path,split='test')
     print(f"training dataset {len(train_dataset)} samples")
     print(f"test dataset {len(test_dataset)} samples")
     train_loader = DataLoader(

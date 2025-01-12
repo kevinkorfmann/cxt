@@ -1,5 +1,5 @@
-Demonstrations
-==============
+Tutorial for Inference
+======================
 
 A few examples of how to use the cxt package.
 
