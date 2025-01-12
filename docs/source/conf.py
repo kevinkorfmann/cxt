@@ -183,8 +183,11 @@ epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
 
-html_logo = "logo.png"
+#html_logo = "logo.png"
 #html_logo = "dark_logo.png"
+#html_logo = "logo_3d.png"
+html_logo = "logo_3d_2.png"
+
 
 html_theme_options = {
     'logo_only': True,
