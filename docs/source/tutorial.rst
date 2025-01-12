@@ -3,7 +3,7 @@ Tutorial for Inference
 
 A few examples of how to use the cxt package.
 
-Constant Demography Pairwise Inference
+Constant Demography (Pairwise) Inference
 --------------------------------------
 
 The following code demonstrates the example usage for the base case of inferring
@@ -98,6 +98,18 @@ is overall samples becomes less than less than 0.001.
 .. image:: ./heatmap_comparison.png
   :width: 800
   :alt: Alternative text
+
+
+Out-of-sample: Sawooth Demography Inference (no fine-tuning)
+------------------------------------------------------------
+
+
+Rescue: Sawooth Demography Inference (with fine-tuning)
+-------------------------------------------------------
+
+
+Out-of-sample: Island Demography Inference (no fine-tuning)
+-------------------------------------------------------------
 
 
 

@@ -42,8 +42,9 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial for Inference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../simulation.html">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../training.html">Training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API documentation</a></li>
 </ul>
 
@@ -110,38 +111,41 @@
 
 <div class="viewcode-block" id="generate_data">
 <a class="viewcode-back" href="../../api.html#cxt.simulation.generate_data">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_data</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ts_simulation_func</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">generate_data</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ts_simulation_func</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generate data for simulation.</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        i : int</span>
-<span class="sd">            A seed integer parameter used by the ts_simulation_func.</span>
-<span class="sd">        pivot_A : int, optional</span>
-<span class="sd">            The first pivot index for processing, by default 0.</span>
-<span class="sd">        pivot_B : int, optional</span>
-<span class="sd">            The second pivot index for processing, by default 1.</span>
-<span class="sd">        ts_simulation_func : callable, optional</span>
-<span class="sd">            A function to simulate tree sequence data, by default None.</span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        tuple</span>
-<span class="sd">            A tuple containing:</span>
-<span class="sd">            - X : np.ndarray</span>
-<span class="sd">                A 3D array with processed data using XOR and XNOR operations.</span>
-<span class="sd">            - y : np.ndarray</span>
-<span class="sd">                A 1D array with log-interpolated TMRCA values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-
+<span class="k">def</span> <span class="nf">generate_data</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate data for simulation.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    i : int</span>
+<span class="sd">        A seed integer parameter used by the ts_simulation_func.</span>
+<span class="sd">    pivot_A : int</span>
+<span class="sd">        The first pivot index for processing, by default 0.</span>
+<span class="sd">    pivot_B : int</span>
+<span class="sd">        The second pivot index for processing, by default 1.</span>
+<span class="sd">    ts_simulation_func : callable</span>
+<span class="sd">        A function to simulate tree sequence data, by default None.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        A tuple containing:</span>
+<span class="sd">        - X : np.ndarray</span>
+<span class="sd">            A 3D array with processed data using XOR and XNOR operations.</span>
+<span class="sd">        - y : np.ndarray</span>
+<span class="sd">            A 1D array with log-interpolated TMRCA values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">i</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">ts_simulation_func</span><span class="p">,</span> <span class="n">randomize_pivots</span> <span class="o">=</span> <span class="n">args</span> 
     <span class="n">ts</span> <span class="o">=</span> <span class="n">ts_simulation_func</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 
     <span class="c1"># processing</span>
     <span class="n">Xxor</span> <span class="o">=</span> <span class="n">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="n">pivot_B</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
     <span class="n">Xxnor</span> <span class="o">=</span> <span class="n">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xnor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="n">pivot_B</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
     <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">Xxor</span><span class="p">,</span> <span class="n">Xxnor</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
-
+    
+    <span class="k">if</span> <span class="n">randomize_pivots</span><span class="p">:</span>
+        <span class="n">pivots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">pivots</span><span class="p">)</span>
+        <span class="n">pivot_A</span> <span class="o">=</span> <span class="n">pivots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pivot_B</span> <span class="o">=</span> <span class="n">pivots</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">interpolate_tmrcas</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="p">[</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">]),</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span></div>
 
@@ -156,7 +160,10 @@
 
 <div class="viewcode-block" id="process_batches">
 <a class="viewcode-back" href="../../api.html#cxt.simulation.process_batches">[docs]</a>
-<span class="k">def</span> <span class="nf">process_batches</span><span class="p">(</span><span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">start_batch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_processes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ts_simulation_func</span><span class="p">:</span> <span class="nb">callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">process_batches</span><span class="p">(</span><span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">start_batch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_processes</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                    <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                    <span class="n">ts_simulation_func</span><span class="p">:</span> <span class="nb">callable</span><span class="p">,</span> <span class="n">randomize_pivots</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Process data in batches using multiprocessing and save the results.</span>
 
@@ -178,6 +185,8 @@
 <span class="sd">            The second pivot index for processing, by default 1.</span>
 <span class="sd">    ts_simulation_func : callable</span>
 <span class="sd">        The simulation function to generate tree sequence data.</span>
+<span class="sd">    randomize_pivots : bool</span>
+<span class="sd">        Randomize pivot indices, by default False.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -189,7 +198,8 @@
         <span class="n">start_sample</span> <span class="o">=</span> <span class="n">batch_idx</span> <span class="o">*</span> <span class="n">batch_size</span>
         <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_sample</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">):</span>
-            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">ts_simulation_func</span><span class="p">))</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">ts_simulation_func</span><span class="p">,</span> <span class="n">randomize_pivots</span><span class="p">))</span>
+
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">generate_data</span><span class="p">,</span> <span class="n">args</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="n">num_samples</span><span class="o">-</span><span class="n">start_sample</span><span class="p">)):</span>
             <span class="n">batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="o">==</span> <span class="n">batch_size</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="n">num_samples</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
@@ -209,7 +219,8 @@
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--pivot_A&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Pivot A index&#39;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--pivot_B&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Pivot B index&#39;</span><span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--data_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;/sietch_colab/kkor/tiny_batches_base_dataset&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Directory to save data&#39;</span><span class="p">)</span>
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--scenario&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="s1">&#39;sawtooth&#39;</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Scenario type&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--scenario&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="s1">&#39;sawtooth&#39;</span><span class="p">,</span> <span class="s1">&#39;island&#39;</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Scenario type&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--randomize_pivots&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Randomize pivot indices&#39;</span><span class="p">)</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
     <span class="n">num_processes</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">num_processes</span>
@@ -220,13 +231,20 @@
     <span class="n">pivot_B</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">pivot_B</span>
     <span class="n">data_dir</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">data_dir</span>
     <span class="n">scenario</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">scenario</span>
+    <span class="n">randomize_pivots</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">randomize_pivots</span>
 
     <span class="k">if</span> <span class="n">scenario</span> <span class="o">==</span> <span class="s2">&quot;constant&quot;</span><span class="p">:</span>
-        <span class="n">process_batches</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">start_batch</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_processes</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">simulate_parameterized_tree_sequence</span><span class="p">)</span>
+        <span class="n">process_batches</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">start_batch</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_processes</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">simulate_parameterized_tree_sequence</span><span class="p">,</span> <span class="n">randomize_pivots</span><span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">scenario</span> <span class="o">==</span> <span class="s2">&quot;sawtooth&quot;</span><span class="p">:</span>
         <span class="n">simulate_parameterized_tree_sequence_sawtooth</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">simulate_parameterized_tree_sequence</span><span class="p">,</span> <span class="n">demography</span><span class="o">=</span><span class="n">create_sawtooth_demogaphy_object</span><span class="p">(</span><span class="n">Ne</span><span class="o">=</span><span class="mf">20e3</span><span class="p">,</span> <span class="n">magnitue</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
-        <span class="n">process_batches</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">start_batch</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_processes</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">simulate_parameterized_tree_sequence_sawtooth</span><span class="p">)</span>
+        <span class="n">process_batches</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">start_batch</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_processes</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">simulate_parameterized_tree_sequence_sawtooth</span><span class="p">,</span> <span class="n">randomize_pivots</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">scenario</span> <span class="o">==</span> <span class="s2">&quot;island&quot;</span><span class="p">:</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+        <span class="n">island_demography</span> <span class="o">=</span> <span class="n">msprime</span><span class="o">.</span><span class="n">Demography</span><span class="o">.</span><span class="n">island_model</span><span class="p">([</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">],</span> <span class="n">migration_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">simulate_parameterized_tree_sequence_island</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">simulate_parameterized_tree_sequence</span><span class="p">,</span> <span class="n">island_demography</span><span class="o">=</span><span class="n">island_demography</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">)</span>
+        <span class="n">process_batches</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">start_batch</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_processes</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">simulate_parameterized_tree_sequence_island</span><span class="p">,</span> <span class="n">randomize_pivots</span><span class="p">)</span>
 </pre></div>
 
            </div>

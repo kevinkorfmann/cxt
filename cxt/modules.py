@@ -108,21 +108,28 @@ class CausalSelfAttention(nn.Module):
         k = k.view(B, T, self.n_head, self.head_size).transpose(1, 2)
         v = v.view(B, T, self.n_head, self.head_size).transpose(1, 2)
      
-        if position == 0:
+
+        if use_cache:
+            if position == 0:
+                q = self.rotary_emb(q.transpose(1, 2), input_pos=torch.arange(T, device=q.device)).transpose(1, 2)
+                k = self.rotary_emb(k.transpose(1, 2), input_pos=torch.arange(T, device=k.device)).transpose(1, 2)
+                self.cache_k[:B, :, :T, :] = k
+                self.cache_v[:B, :, :T, :] = v
+            else:
+                q = self.rotary_emb(q.transpose(1, 2), input_pos=position).transpose(1, 2)
+                k = self.rotary_emb(k.transpose(1, 2), input_pos=position).transpose(1, 2)
+                self.cache_k[:B, :, position:position + T, :] = k
+                self.cache_v[:B, :, position:position + T, :] = v
+                k = self.cache_k[:B, :, :position + T, :]
+                v = self.cache_v[:B, :, :position + T, :]
+        else:
             q = self.rotary_emb(q.transpose(1, 2), input_pos=torch.arange(T, device=q.device)).transpose(1, 2)
             k = self.rotary_emb(k.transpose(1, 2), input_pos=torch.arange(T, device=k.device)).transpose(1, 2)
-            self.cache_k[:B, :, :T, :] = k
-            self.cache_v[:B, :, :T, :] = v
-        else:
-            q = self.rotary_emb(q.transpose(1, 2), input_pos=position).transpose(1, 2)
-            k = self.rotary_emb(k.transpose(1, 2), input_pos=position).transpose(1, 2)
-            self.cache_k[:B, :, position:position + T, :] = k
-            self.cache_v[:B, :, position:position + T, :] = v
-            k = self.cache_k[:B, :, :position + T, :]
-            v = self.cache_v[:B, :, :position + T, :]
 
-        if position == 0: attn_mask = attn_mask[:, :, :q.size(-2), :k.size(-2)]
-        else: attn_mask = attn_mask[:, :, position, :k.size(-2)].unsqueeze(2)
+        if use_cache:
+            if position == 0: attn_mask = attn_mask[:, :, :q.size(-2), :k.size(-2)]
+            else: attn_mask = attn_mask[:, :, position, :k.size(-2)].unsqueeze(2)
+
 
         y = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
         y = y.transpose(1, 2).contiguous().view(B, -1, C)

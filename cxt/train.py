@@ -42,6 +42,7 @@ class TokenFreeDecoderConfig:
     dropout: float = 0.1
     n_head: int = 4
     device: str = "cuda"
+    batch_size: int = config['training']['batch_size']
 
 class LitTokenFreeDecoder(L.LightningModule):
     def __init__(self, gpt_config):
@@ -102,11 +103,23 @@ class LitTokenFreeDecoder(L.LightningModule):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train TokenFreeDecoder model")
     parser.add_argument('--dataset_path', type=str, default='/sietch_colab/kkor/tiny_batches_base_dataset', help='Path to the dataset')
+    parser.add_argument('--gpus', type=int, nargs='+', default=[0, 1, 2], help='List of GPUs to use')
+    parser.add_argument('--checkpoint_path', type=str, default=None, help='Path to the checkpoint')
+    parser.add_argument('--num_epochs', type=int, default=10, help='Number of epochs to train')
+    parser.add_argument('--learning_rate', type=float, default=3e-4, help='Learning rate for the optimizer')
+    parser.add_argument('--test_batches', type=int, default=100, help='Tiny batch size of 1000')
+
     args = parser.parse_args()
     dataset_path = args.dataset_path
+    gpus = args.gpus
+    checkpoint_path = args.checkpoint_path
+    num_epochs = args.num_epochs
+    learning_rate = args.learning_rate
+    test_batches = args.test_batches
+    config['training']['max_lr'] = learning_rate
     
-    train_dataset = LazyDataset(dataset_path, split='train')
-    test_dataset = LazyDataset(dataset_path,split='test')
+    train_dataset = LazyDataset(dataset_path, split='train', test_batches=test_batches)
+    test_dataset = LazyDataset(dataset_path, split='test', test_batches=test_batches)
     print(f"training dataset {len(train_dataset)} samples")
     print(f"test dataset {len(test_dataset)} samples")
     train_loader = DataLoader(
@@ -126,14 +139,19 @@ if __name__ == "__main__":
         persistent_workers=True
     )
     gpt_config = TokenFreeDecoderConfig()
-    lit_model = LitTokenFreeDecoder(gpt_config)
+    
+
+    if checkpoint_path:
+        lit_model = LitTokenFreeDecoder.load_from_checkpoint(checkpoint_path, config=gpt_config)
+    else:
+        lit_model = LitTokenFreeDecoder(gpt_config)
     
 
     torch.set_float32_matmul_precision('medium')
     trainer = L.Trainer(
-        max_epochs=10,
+        max_epochs=num_epochs,
         accelerator="auto",
-        devices=[0, 1, 2],
+        devices=gpus,
         precision="bf16-mixed",
         strategy="ddp", # not in interactive mode
         #detect_anomaly=True,

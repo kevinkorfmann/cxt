@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API documentation" href="api.html" />
-    <link rel="prev" title="Tutorial" href="tutorial.html" /> 
+    <link rel="next" title="Training" href="training.html" />
+    <link rel="prev" title="Tutorial for Inference" href="tutorial.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -31,8 +31,9 @@
 
           
           
-          <a href="index.html" class="icon icon-home">
-            cxt
+          <a href="index.html">
+            
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -45,8 +46,9 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial for Inference</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training.html">Training</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a></li>
 </ul>
 
@@ -77,28 +79,41 @@
   <section id="simulation">
 <h1>Simulation<a class="headerlink" href="#simulation" title="Link to this heading"></a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">cxt</span></code> is trained on simulated data. The following code demonstrates how to simulate data for training and inference.</p>
-<p>Constant Demography Dataset (CDD):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>simulate.py<span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--num_processes<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--num_samples<span class="w"> </span>2_000_000<span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--batch_size<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--start_batch<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--pivot_A<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--pivot_B<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--data_dir<span class="w"> </span>/sietch_colab/kkor/tiny_batches_base_dataset<span class="w"> </span><span class="se">\\</span>
+<p>Constant Demography Dataset (cdd):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>simulation.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--num_processes<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--num_samples<span class="w"> </span>2_000_000<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--batch_size<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--start_batch<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pivot_A<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pivot_B<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data_dir<span class="w"> </span>/sietch_colab/kkor/tiny_batches_base_dataset<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--scenario<span class="w"> </span>constant
 </pre></div>
 </div>
-<p>Sawtooth Demography Dataset (SDD) for fine-tuning:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>simulate.py<span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--num_processes<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--num_samples<span class="w"> </span>200_000<span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--batch_size<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--start_batch<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--pivot_A<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--pivot_B<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\\</span>
-<span class="w">    </span>--data_dir<span class="w"> </span>/sietch_colab/kkor/tiny_batches_sawtooth_dataset<span class="w"> </span><span class="se">\\</span>
+<p>Sawtooth Demography Dataset (sdd) for fine-tuning:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>simulation.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--num_processes<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--num_samples<span class="w"> </span>200_000<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--batch_size<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--start_batch<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pivot_A<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pivot_B<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data_dir<span class="w"> </span>/sietch_colab/kkor/tiny_batches_ssd<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--scenario<span class="w"> </span>sawtooth
+</pre></div>
+</div>
+<p>Island Demography Dataset (idd) for fine-tuning:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>simulation.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--num_processes<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--num_samples<span class="w"> </span>200_000<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--batch_size<span class="w"> </span><span class="m">1000</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--start_batch<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pivot_A<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pivot_B<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--data_dir<span class="w"> </span>/sietch_colab/kkor/idd<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--scenario<span class="w"> </span>island<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--randomize_pivots<span class="w"> </span>True
 </pre></div>
 </div>
 </section>
@@ -107,14 +122,14 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="api.html" class="btn btn-neutral float-right" title="API documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="tutorial.html" class="btn btn-neutral float-left" title="Tutorial for Inference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="training.html" class="btn btn-neutral float-right" title="Training" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Kevin Korfmann.</p>
+    <p>&#169; Copyright 2024, Kevin Korfmann | Logo designed by Negar Rahnamae.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

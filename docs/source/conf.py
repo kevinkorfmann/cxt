@@ -20,8 +20,11 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information -----------------------------------------------------
 
 project = u'cxt'
-copyright = u'2024, Kevin Korfmann'
+#copyright = u'2024, Kevin Korfmann'
+copyright = u"""2024, Kevin Korfmann | Logo designed by Negar Rahnamae"""
+
 author = u'Kevin Korfmann'
+
 
 # The short X.Y version
 version = u''
@@ -179,3 +182,11 @@ epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
+
+html_logo = "logo.png"
+#html_logo = "dark_logo.png"
+
+html_theme_options = {
+    'logo_only': True,
+    'display_version': False,
+}

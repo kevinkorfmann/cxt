@@ -15,6 +15,8 @@ def discretize(sequence, population_time):
     indices = np.clip(indices, 0, len(population_time) - 1)
     return indices.tolist()
 
+
+
 def simulate_parameterized_tree_sequence(
         seed,
         samples=25,
@@ -23,17 +25,25 @@ def simulate_parameterized_tree_sequence(
         recombination_rate=1.28e-8,
         ploidy=2,
         mutation_rate=1.29e-8,
-        demography=None
+        demography=None,
+        island_demography=None, #msprime.Demography.island_model([10000, 5000, 5000], migration_rate=0.1)
         ):
     np.random.seed(seed)
     SEED = np.random.uniform(1, 2**32 - 1)
+
+    assert demography is None or island_demography is None
     if demography:
         ts = msprime.sim_ancestry(
             samples=samples, 
             demography=demography,
             sequence_length=sequence_length,
             recombination_rate=recombination_rate, ploidy=ploidy, random_seed=SEED)
-
+    elif island_demography:
+        ts = msprime.sim_ancestry(
+            samples=samples, # {0: 15, 1: 5, 2: 5}
+            sequence_length=sequence_length,
+            demography=island_demography,
+            recombination_rate=recombination_rate, ploidy=ploidy, random_seed=SEED)
     else:
         ts = msprime.sim_ancestry(
             samples=samples, 

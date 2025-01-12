@@ -19,6 +19,8 @@ cxt(kit): Coalescence x Translation (toolkit)
    tutorial
    simulation
    training
+   comparison
+   gallery
    api
 
 
