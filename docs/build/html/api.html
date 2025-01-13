@@ -45,6 +45,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial for Inference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training.html">Training</a></li>
@@ -76,6 +77,15 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.modules.MutationsToLatentSpace"><code class="docutils literal notranslate"><span class="pre">MutationsToLatentSpace</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#cxt.modules.MutationsToLatentSpace.forward"><code class="docutils literal notranslate"><span class="pre">MutationsToLatentSpace.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cxt.model">cxt.model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.model.TokenFreeDecoder"><code class="docutils literal notranslate"><span class="pre">TokenFreeDecoder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cxt.model.TokenFreeDecoder.clear_cache"><code class="docutils literal notranslate"><span class="pre">TokenFreeDecoder.clear_cache()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cxt.model.TokenFreeDecoder.configure_optimizers"><code class="docutils literal notranslate"><span class="pre">TokenFreeDecoder.configure_optimizers()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cxt.model.TokenFreeDecoder.forward"><code class="docutils literal notranslate"><span class="pre">TokenFreeDecoder.forward()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -307,6 +317,39 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="cxt.modules.MutationsToLatentSpace.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/modules.html#MutationsToLatentSpace.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.modules.MutationsToLatentSpace.forward" title="Link to this definition"></a></dt>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-cxt.model">
+<span id="cxt-model"></span><h2>cxt.model<a class="headerlink" href="#module-cxt.model" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="cxt.model.TokenFreeDecoder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cxt.model.</span></span><span class="sig-name descname"><span class="pre">TokenFreeDecoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/model.html#TokenFreeDecoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.model.TokenFreeDecoder" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cxt.model.TokenFreeDecoder.clear_cache">
+<span class="sig-name descname"><span class="pre">clear_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/model.html#TokenFreeDecoder.clear_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.model.TokenFreeDecoder.clear_cache" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cxt.model.TokenFreeDecoder.configure_optimizers">
+<span class="sig-name descname"><span class="pre">configure_optimizers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">betas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/model.html#TokenFreeDecoder.configure_optimizers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.model.TokenFreeDecoder.configure_optimizers" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cxt.model.TokenFreeDecoder.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attn_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculate_loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/model.html#TokenFreeDecoder.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.model.TokenFreeDecoder.forward" title="Link to this definition"></a></dt>
 <dd><p>Define the computation performed at every call.</p>
 <p>Should be overridden by all subclasses.</p>
 <div class="admonition note">

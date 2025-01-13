@@ -10,6 +10,14 @@ cxt.modules
    :undoc-members:
    :show-inheritance:
 
+cxt.model
+-----------
+
+.. automodule:: cxt.model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 cxt.simulations
 ---------------
 
