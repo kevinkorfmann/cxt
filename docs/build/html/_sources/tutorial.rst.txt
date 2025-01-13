@@ -72,36 +72,82 @@ is overall samples becomes less than less than 0.001.
   :width: 800
   :alt: Alternative text
 
+.. code-block:: python
+
+      from cxt.inference import translate_from_ts
+      from cxt.config import TokenFreeDecoderConfig 
+      from cxt.utils import simulate_parameterized_tree_sequence
+
+      ts = simulate_parameterized_tree_sequence(seed=103370001)
+      yhats, ytrues = translate_from_ts(
+          ts = ts,
+          model_config=TokenFreeDecoderConfig(),
+          model_path='../cxt/models/base_model/checkpoints/epoch=4-step=16160.ckpt',
+      )
+
+.. code-block:: python
+
+      plt.figure(figsize=(16, 4))
+      for i in range(13):
+          sns.lineplot(y=yhats[i][0], x=range(0, 1_000_000, 2000), c="blue")
+      sns.lineplot(y=ytrues[i][0], x=range(0, 1_000_000, 2000), c="black")
+      plt.title("Comparison of predicted and inferred pairwise coalescence times (Inference [1/1225]: Samples 0/1).", fontsize=16, loc="left")
+      plt.xlabel("Sequence [bp]", fontsize=14)
+      plt.ylabel("log(Time) [generations]", fontsize=14)
+      plt.grid(alpha=0.25)
+      plt.tight_layout()
+      plt.savefig("inference_example_2.png", dpi=300)
+
+
+.. image:: ./inference_example_2.png
+  :width: 800
+  :alt: Prediction of a single example.
+
+We continue by showing various scatter plots of the inferred pairwise coalescence times
+for sawtooth and island demography models with and without fine-tuning.
 
 Out-of-sample: Sawooth Demography Inference (no fine-tuning)
 ------------------------------------------------------------
 
+The underlying demography is a sawtooth model with periodic population size changes. Our
+language model is able to infer the pairwise coalescence times with a high degree of accuracy,
+despite not being fine-tuned to the task at hand.
+
 .. image:: ./inference_scatter_cxtkit_sawtooth_no_finetune.png
-  :width: 800
-  :alt: Alternative text
+  :width: 400
+  :alt: Sawooth demography inference without fine-tuning
 
 Rescue: Sawooth Demography Inference (with fine-tuning)
 -------------------------------------------------------
 
+Interestingly, the fine-tuning of the language model on the sawtooth demography model leads to
+much better performance like due to the decrease of entropy in the dataset as a consequence of
+bottlenecks and expansions, shifting the distribution to a less complex space (making the task
+easier to capture for the model).
+
 .. image:: ./inference_scatter_cxtkit_sawtooth_with_finetune.png
-  :width: 800
-  :alt: Alternative text
+  :width: 400
+  :alt: Sawooth demography inference with fine-tuning
 
 
 Out-of-sample: Island Demography Inference (no fine-tuning)
 -------------------------------------------------------------
 
+The island demography model with three populations and migration between suprisingly leads to accuratly
+infered pairwise coalescence times only in the non-fined-tuned version of the model. The fine-tuned model
+suffers from mode-collapse, whose origing is not yet fully understood.
+
 .. image:: ./inference_scatter_cxtkit_island_no_finetune.png
-  :width: 800
-  :alt: Alternative text
+  :width: 400
+  :alt: Island demography inference without fine-tuning
 
 "Rescue": Island Demography Inference (with fine-tuning)
 -------------------------------------------------------------
 
-Why mode-collapse?
+Described mode-collapse ...
 
 .. image:: ./inference_scatter_cxtkit_island_with_finetune.png
-  :width: 800
-  :alt: Alternative text
+  :width: 400
+  :alt: Island demography inference with fine-tuning
 
 

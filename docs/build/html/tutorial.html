@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Simulation" href="simulation.html" />
-    <link rel="prev" title="Installation" href="installation.html" /> 
+    <link rel="prev" title="Quick start" href="quick_start.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,6 +46,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick start</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial for Inference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#constant-demography-pairwise-inference">Constant Demography (Pairwise) Inference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#out-of-sample-sawooth-demography-inference-no-fine-tuning">Out-of-sample: Sawooth Demography Inference (no fine-tuning)</a></li>
@@ -141,26 +142,64 @@ is overall samples becomes less than less than 0.001.</p>
 <p>** Plotting code not shown **</p>
 <a class="reference internal image-reference" href="_images/heatmap_comparison.png"><img alt="Alternative text" src="_images/heatmap_comparison.png" style="width: 800px;" />
 </a>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cxt.inference</span> <span class="kn">import</span> <span class="n">translate_from_ts</span>
+<span class="kn">from</span> <span class="nn">cxt.config</span> <span class="kn">import</span> <span class="n">TokenFreeDecoderConfig</span>
+<span class="kn">from</span> <span class="nn">cxt.utils</span> <span class="kn">import</span> <span class="n">simulate_parameterized_tree_sequence</span>
+
+<span class="n">ts</span> <span class="o">=</span> <span class="n">simulate_parameterized_tree_sequence</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">103370001</span><span class="p">)</span>
+<span class="n">yhats</span><span class="p">,</span> <span class="n">ytrues</span> <span class="o">=</span> <span class="n">translate_from_ts</span><span class="p">(</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">ts</span><span class="p">,</span>
+    <span class="n">model_config</span><span class="o">=</span><span class="n">TokenFreeDecoderConfig</span><span class="p">(),</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s1">&#39;../cxt/models/base_model/checkpoints/epoch=4-step=16160.ckpt&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">13</span><span class="p">):</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">lineplot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">yhats</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1_000_000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">)</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">lineplot</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">ytrues</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1_000_000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Comparison of predicted and inferred pairwise coalescence times (Inference [1/1225]: Samples 0/1).&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Sequence [bp]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;log(Time) [generations]&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;inference_example_2.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/inference_example_2.png"><img alt="Prediction of a single example." src="_images/inference_example_2.png" style="width: 800px;" />
+</a>
+<p>We continue by showing various scatter plots of the inferred pairwise coalescence times
+for sawtooth and island demography models with and without fine-tuning.</p>
 </section>
 <section id="out-of-sample-sawooth-demography-inference-no-fine-tuning">
 <h2>Out-of-sample: Sawooth Demography Inference (no fine-tuning)<a class="headerlink" href="#out-of-sample-sawooth-demography-inference-no-fine-tuning" title="Link to this heading"></a></h2>
-<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_sawtooth_no_finetune.png"><img alt="Alternative text" src="_images/inference_scatter_cxtkit_sawtooth_no_finetune.png" style="width: 800px;" />
+<p>The underlying demography is a sawtooth model with periodic population size changes. Our
+language model is able to infer the pairwise coalescence times with a high degree of accuracy,
+despite not being fine-tuned to the task at hand.</p>
+<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_sawtooth_no_finetune.png"><img alt="Sawooth demography inference without fine-tuning" src="_images/inference_scatter_cxtkit_sawtooth_no_finetune.png" style="width: 400px;" />
 </a>
 </section>
 <section id="rescue-sawooth-demography-inference-with-fine-tuning">
 <h2>Rescue: Sawooth Demography Inference (with fine-tuning)<a class="headerlink" href="#rescue-sawooth-demography-inference-with-fine-tuning" title="Link to this heading"></a></h2>
-<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_sawtooth_with_finetune.png"><img alt="Alternative text" src="_images/inference_scatter_cxtkit_sawtooth_with_finetune.png" style="width: 800px;" />
+<p>Interestingly, the fine-tuning of the language model on the sawtooth demography model leads to
+much better performance like due to the decrease of entropy in the dataset as a consequence of
+bottlenecks and expansions, shifting the distribution to a less complex space (making the task
+easier to capture for the model).</p>
+<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_sawtooth_with_finetune.png"><img alt="Sawooth demography inference with fine-tuning" src="_images/inference_scatter_cxtkit_sawtooth_with_finetune.png" style="width: 400px;" />
 </a>
 </section>
 <section id="out-of-sample-island-demography-inference-no-fine-tuning">
 <h2>Out-of-sample: Island Demography Inference (no fine-tuning)<a class="headerlink" href="#out-of-sample-island-demography-inference-no-fine-tuning" title="Link to this heading"></a></h2>
-<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_island_no_finetune.png"><img alt="Alternative text" src="_images/inference_scatter_cxtkit_island_no_finetune.png" style="width: 800px;" />
+<p>The island demography model with three populations and migration between suprisingly leads to accuratly
+infered pairwise coalescence times only in the non-fined-tuned version of the model. The fine-tuned model
+suffers from mode-collapse, whose origing is not yet fully understood.</p>
+<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_island_no_finetune.png"><img alt="Island demography inference without fine-tuning" src="_images/inference_scatter_cxtkit_island_no_finetune.png" style="width: 400px;" />
 </a>
 </section>
 <section id="rescue-island-demography-inference-with-fine-tuning">
 <h2>“Rescue”: Island Demography Inference (with fine-tuning)<a class="headerlink" href="#rescue-island-demography-inference-with-fine-tuning" title="Link to this heading"></a></h2>
-<p>Why mode-collapse?</p>
-<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_island_with_finetune.png"><img alt="Alternative text" src="_images/inference_scatter_cxtkit_island_with_finetune.png" style="width: 800px;" />
+<p>Described mode-collapse …</p>
+<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_island_with_finetune.png"><img alt="Island demography inference with fine-tuning" src="_images/inference_scatter_cxtkit_island_with_finetune.png" style="width: 400px;" />
 </a>
 </section>
 </section>
@@ -169,7 +208,7 @@ is overall samples becomes less than less than 0.001.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quick_start.html" class="btn btn-neutral float-left" title="Quick start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="simulation.html" class="btn btn-neutral float-right" title="Simulation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
