@@ -46,6 +46,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial for Inference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training.html">Training</a></li>
@@ -122,9 +123,82 @@ third scenario employs an island model with three populations and migration betw
 <span class="k">done</span>
 </pre></div>
 </div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tskit</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
+<span class="kn">from</span> <span class="nn">cxt.utils</span> <span class="kn">import</span> <span class="n">interpolate_tmrcas</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span><span class="p">,</span> <span class="n">cpu_count</span>
+<span class="kn">from</span> <span class="nn">cxt.plotting</span> <span class="kn">import</span> <span class="n">plot_inference_scatter</span>
+
+<span class="n">SEED</span> <span class="o">=</span> <span class="mi">103370001</span>
+<span class="n">SCENARIO</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="n">WINDOW_SIZE</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="n">NUM_PROCESSES</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="k">def</span> <span class="nf">process_file</span><span class="p">(</span><span class="n">file_idx</span><span class="p">):</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;ts_seed_</span><span class="si">{</span><span class="n">SEED</span><span class="si">}{</span><span class="n">SCENARIO</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">file_idx</span><span class="si">}</span><span class="s2">.trees&quot;</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">tskit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="n">combs</span> <span class="o">=</span> <span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">tmrcas_comb</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">combs</span><span class="p">:</span>
+        <span class="n">ts_simple</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">])</span>
+        <span class="n">tmrcas_comb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interpolate_tmrcas</span><span class="p">(</span><span class="n">ts_simple</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="n">WINDOW_SIZE</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">tmrcas_comb</span>
+
+<span class="n">num_files</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">NUM_PROCESSES</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">process_file</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_files</span><span class="p">)),</span> <span class="n">total</span><span class="o">=</span><span class="n">num_files</span><span class="p">))</span>
+<span class="n">tmrcas</span> <span class="o">=</span> <span class="n">results</span>
+<span class="n">yhats_singer</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tmrcas</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+
+<span class="kn">from</span> <span class="nn">cxt.utils</span> <span class="kn">import</span> <span class="n">simulate_parameterized_tree_sequence</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">simulate_parameterized_tree_sequence</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>
+<span class="n">combs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">tmrcas</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">combs</span><span class="p">):</span>
+    <span class="n">ts_simple</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">])</span>
+    <span class="n">tmrcas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interpolate_tmrcas</span><span class="p">(</span><span class="n">ts_simple</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">))</span>
+<span class="n">ytrues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tmrcas</span><span class="p">)</span>
+
+<span class="n">yhats_singer_log</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">yhats_singer</span><span class="p">)</span>
+<span class="n">ytrues_log</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ytrues</span><span class="p">)</span>
+
+<span class="n">plot_inference_scatter</span><span class="p">(</span>
+    <span class="n">yhats_singer_log</span><span class="p">,</span> <span class="n">ytrues_log</span><span class="p">,</span>
+    <span class="s2">&quot;inference_scatter_singer_constant.png&quot;</span><span class="p">,</span>
+    <span class="n">subtitle</span><span class="o">=</span><span class="s2">&quot;Constant Demography &quot;</span><span class="p">,</span>
+    <span class="n">tool</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\mathbf</span><span class="si">{singer}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="n">stackit</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/inference_scatter_singer_constant.png"><img alt="Constant demography inference" src="_images/inference_scatter_singer_constant.png" style="width: 400px;" />
+</a>
+<a class="reference internal image-reference" href="_images/inference_scatter_singer_sawtooth.png"><img alt="Sawooth demography inference" src="_images/inference_scatter_singer_sawtooth.png" style="width: 400px;" />
+</a>
+<p><strong>For some unknown reason, the island demography inference failed to using Singer for now.</strong></p>
 </section>
 <section id="gamma-smc">
 <h2>Gamma-SMC<a class="headerlink" href="#gamma-smc" title="Link to this heading"></a></h2>
+<p>Gamma-SMC is method developed by Schweiger and Durbin (2023) and accesible here: <a class="reference external" href="https://github.com/regevs/gamma_smc/tree/main">https://github.com/regevs/gamma_smc/tree/main</a></p>
+<p>An example command for running it is shown below:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>singularity<span class="w"> </span>run<span class="w"> </span>-B<span class="w"> </span>/home/kkor/cxt/nbs/gamma-smc:/mnt<span class="w"> </span>docker://docker.io/regevsch/gamma_smc:v0.2<span class="w">  </span>-i<span class="w"> </span>/mnt/ts_seed_103370001.vcf<span class="w">  </span>-o<span class="w"> </span>/mnt/ts_seed_103370001.zst<span class="w"> </span>-t<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+<p>And TMRCAs can be extracted using the following command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">alphas</span><span class="p">,</span> <span class="n">betas</span><span class="p">,</span> <span class="n">meta</span> <span class="o">=</span> <span class="n">open_posteriors</span><span class="p">(</span><span class="s2">&quot;ts_seed_103370001.zst&quot;</span><span class="p">)</span>
+<span class="n">tmrca_gamma_smc</span> <span class="o">=</span> <span class="n">alphas</span> <span class="o">/</span> <span class="n">betas</span>
+<span class="n">tmrca_gamma_smc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">tmrca_gamma_smc</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="mi">20_000</span><span class="p">)</span>
+<span class="n">tmrca_gamma_smc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tmrca_gamma_smc</span><span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="_images/inference_scatter_gamma_smc_constant.png"><img alt="Constant demography inference" src="_images/inference_scatter_gamma_smc_constant.png" style="width: 400px;" />
+</a>
+<a class="reference internal image-reference" href="_images/inference_scatter_gamma_smc_sawtooth.png"><img alt="Sawooth demography inference" src="_images/inference_scatter_gamma_smc_sawtooth.png" style="width: 400px;" />
+</a>
+<a class="reference internal image-reference" href="_images/inference_scatter_gamma_smc_island.png"><img alt="Island demography inference" src="_images/inference_scatter_gamma_smc_island.png" style="width: 400px;" />
+</a>
 </section>
 </section>
 
