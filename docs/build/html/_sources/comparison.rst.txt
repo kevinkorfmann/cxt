@@ -20,6 +20,7 @@ third scenario employs an island model with three populations and migration betw
 .. code-block:: python
 
     from functools import partial
+    from cxt.utils import create_sawtooth_demogaphy_object
     simulate_parameterized_tree_sequence_sawtooth = partial(simulate_parameterized_tree_sequence,
         demography=create_sawtooth_demogaphy_object(Ne=20e3, magnitue=3))
     ts = simulate_parameterized_tree_sequence_sawtooth(SEED)
@@ -45,8 +46,8 @@ Singer is method developed by Deng et al. (2024) and accesible here: https://git
 .. code-block:: bash
 
     for scenario in ts_seed_103370001 ts_seed_103370001_sawtooth ts_seed_103370001_island ; do
-        SINGER/releases/singer_master -vcf ${scenario} -output ${scenario} -m 1.29e-8 -n 100 -thin 20 -start 0 -end 1000000 -Ne 20000 -polar 0.99 -fast
-        SINGER/releases/convert_to_tskit -input ${scenario}_fast -output ${scenario} -start 0 -end 1000000 
+        singer_master -vcf ${scenario} -output ${scenario} -m 1.29e-8 -n 100 -thin 20 -start 0 -end 1000000 -Ne 20000 -polar 0.99 -fast
+        convert_to_tskit -input ${scenario}_fast -output ${scenario} -start 0 -end 1000000 
     done
 
 

@@ -88,9 +88,9 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-cxt.utils">cxt.utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.utils.accumulating_mses"><code class="docutils literal notranslate"><span class="pre">accumulating_mses()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.calculate_window_sfs_vectorized"><code class="docutils literal notranslate"><span class="pre">calculate_window_sfs_vectorized()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.create_sawtooth_demogaphy_object"><code class="docutils literal notranslate"><span class="pre">create_sawtooth_demogaphy_object()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#cxt.utils.decreasing_mses"><code class="docutils literal notranslate"><span class="pre">decreasing_mses()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.discretize"><code class="docutils literal notranslate"><span class="pre">discretize()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.generate_causal_mask"><code class="docutils literal notranslate"><span class="pre">generate_causal_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.interpolate_tmrca_per_window"><code class="docutils literal notranslate"><span class="pre">interpolate_tmrca_per_window()</span></code></a></li>
@@ -395,6 +395,11 @@ registered hooks while the latter silently ignores them.</p>
 <section id="module-cxt.utils">
 <span id="cxt-utils"></span><h2>cxt.utils<a class="headerlink" href="#module-cxt.utils" title="Link to this heading"></a></h2>
 <dl class="py function">
+<dt class="sig sig-object py" id="cxt.utils.accumulating_mses">
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">accumulating_mses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yhats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ytrues</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#accumulating_mses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.accumulating_mses" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cxt.utils.calculate_window_sfs_vectorized">
 <span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">calculate_window_sfs_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">site_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_frequencies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#calculate_window_sfs_vectorized"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.calculate_window_sfs_vectorized" title="Link to this definition"></a></dt>
 <dd><p>Memory-efficient vectorized calculation of SFS</p>
@@ -403,11 +408,6 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="cxt.utils.create_sawtooth_demogaphy_object">
 <span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">create_sawtooth_demogaphy_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ne</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magnitue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#create_sawtooth_demogaphy_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.create_sawtooth_demogaphy_object" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="cxt.utils.decreasing_mses">
-<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">decreasing_mses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yhats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ytrues</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#decreasing_mses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.decreasing_mses" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">

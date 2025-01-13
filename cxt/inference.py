@@ -5,6 +5,11 @@ from cxt.utils import generate_causal_mask
 from itertools import combinations
 from multiprocessing import Pool
 from tqdm import tqdm
+import numpy as np
+
+from cxt.utils import post_process, accumulating_mses, mse
+from cxt.utils import simulate_parameterized_tree_sequence, TIMES
+
 
 from cxt.utils import process_pair
 def totensorlist(l): return [torch.tensor(a) for a in l]
@@ -27,7 +32,7 @@ def generate_nokv(model, src, top_k=None, temperature=1, max_len=500, device='cu
         return idx[:, 1:].cpu().numpy() - 2
 
 
-def generate(model, src, B=20, device="cuda"):
+def generate(model, src, B=20, device="cuda", clear_cache=True):
     attn_mask = generate_causal_mask(1001, device)
     attn_mask = attn_mask.repeat(B, 1, 1, 1)
     idx = torch.ones(B, 1).long().to(device)
@@ -45,6 +50,8 @@ def generate(model, src, B=20, device="cuda"):
                     probs = F.softmax(logits, dim=-1)
                     next_token = torch.multinomial(probs, num_samples=1)
                     idx = torch.cat([idx, next_token], dim=1)
+    
+    if clear_cache: model.clear_cache()
     return idx
 
 def load_model(config, model_path=None, device='cuda'):
@@ -56,7 +63,7 @@ def load_model(config, model_path=None, device='cuda'):
     model.eval()
     return model
 
-def prepare_ts_data(ts: object, num_samples: int, B: int) -> tuple:
+def prepare_ts_data(ts: object, num_samples: int, B: int, device='cuda') -> tuple:
     """
     Prepares the data for the model by processing pairs of samples from the tree sequence.
 
@@ -77,4 +84,37 @@ def prepare_ts_data(ts: object, num_samples: int, B: int) -> tuple:
     tgt_list = totensorlist(tgt_list)
     src = torch.stack(src_list, dim=0)  
     tgt = torch.stack(tgt_list, dim=0) 
+    src = src.to(device).to(torch.float32)
     return src, tgt
+
+def translate_from_ts(
+        ts,
+        max_replicates = 20, use_early_stopping = True,
+        model_config=None,
+        model_path=None
+    ):
+    """Assumes sample size of 50 for now and large enough GPU to fit 1225 batch."""
+
+    model = load_model(
+        config=model_config, 
+        model_path=model_path
+    )
+
+    src, tgt = prepare_ts_data(ts, num_samples=50, B=1225)
+    yhats, ytrues = [], []
+    for i in range(max_replicates):
+        sequence = generate(model, src, B=1225)
+        yhat, ytrue = post_process(tgt, sequence, TIMES)
+        yhats.append(yhat)
+        ytrues.append(ytrue)
+        if use_early_stopping:
+            # early stopping criteria
+            if i > 1:
+                mses = accumulating_mses(yhats, ytrues)
+                derivatives = np.diff(mses)
+                if abs(derivatives[-1]) < 0.001:
+                    print(f"Stopping at {i} because derivative is {derivatives[-1]}.")
+                    break
+    return yhats, ytrues
+
+

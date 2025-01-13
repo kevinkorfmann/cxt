@@ -13,3 +13,5 @@ torchtune
 lightning
 msprime
 scipy
+
+ipywidgets

@@ -207,7 +207,7 @@ def process_pair(args):
     return ts2input_numpy(ts, pivot_A, pivot_B)
 
 
-def decreasing_mses(yhats, ytrues):
+def accumulating_mses(yhats, ytrues):
     mse_values = []
     for i in range(1, len(yhats) + 1):
         yhat_mean = sum(yhats[:i]) / i

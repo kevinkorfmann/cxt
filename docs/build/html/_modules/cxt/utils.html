@@ -28,8 +28,9 @@
 
           
           
-          <a href="../../index.html" class="icon icon-home">
-            cxt
+          <a href="../../index.html">
+            
+              <img src="../../_static/logo_3d_2.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -45,6 +46,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial for Inference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../simulation.html">Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training.html">Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../comparison.html">Comparisons with other tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gallery.html">Gallery</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API documentation</a></li>
 </ul>
 
@@ -321,9 +324,9 @@
 
 
 
-<div class="viewcode-block" id="decreasing_mses">
-<a class="viewcode-back" href="../../api.html#cxt.utils.decreasing_mses">[docs]</a>
-<span class="k">def</span> <span class="nf">decreasing_mses</span><span class="p">(</span><span class="n">yhats</span><span class="p">,</span> <span class="n">ytrues</span><span class="p">):</span>
+<div class="viewcode-block" id="accumulating_mses">
+<a class="viewcode-back" href="../../api.html#cxt.utils.accumulating_mses">[docs]</a>
+<span class="k">def</span> <span class="nf">accumulating_mses</span><span class="p">(</span><span class="n">yhats</span><span class="p">,</span> <span class="n">ytrues</span><span class="p">):</span>
     <span class="n">mse_values</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">yhats</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="n">yhat_mean</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">yhats</span><span class="p">[:</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">i</span>
@@ -342,7 +345,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Kevin Korfmann.</p>
+    <p>&#169; Copyright 2024, Kevin Korfmann | Logo designed by Negar Rahnamae.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

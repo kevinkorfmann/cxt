@@ -51,6 +51,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#out-of-sample-sawooth-demography-inference-no-fine-tuning">Out-of-sample: Sawooth Demography Inference (no fine-tuning)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#rescue-sawooth-demography-inference-with-fine-tuning">Rescue: Sawooth Demography Inference (with fine-tuning)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#out-of-sample-island-demography-inference-no-fine-tuning">Out-of-sample: Island Demography Inference (no fine-tuning)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rescue-island-demography-inference-with-fine-tuning">“Rescue”: Island Demography Inference (with fine-tuning)</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulation</a></li>
@@ -95,39 +96,24 @@ simulated fragment.</p>
 <p>Loading a few functions for simulating the data and for inference and processing it.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">cxt.utils</span> <span class="kn">import</span> <span class="n">post_process</span><span class="p">,</span> <span class="n">decreasing_mses</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">set_float32_matmul_precision</span><span class="p">(</span><span class="s1">&#39;medium&#39;</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">cxt.config</span> <span class="kn">import</span> <span class="n">TokenFreeDecoderConfig</span>
+<span class="kn">from</span> <span class="nn">cxt.utils</span> <span class="kn">import</span> <span class="n">post_process</span><span class="p">,</span> <span class="n">accumulating_mses</span><span class="p">,</span> <span class="n">mse</span>
 <span class="kn">from</span> <span class="nn">cxt.inference</span> <span class="kn">import</span> <span class="n">generate</span><span class="p">,</span> <span class="n">load_model</span><span class="p">,</span> <span class="n">prepare_ts_data</span>
 <span class="kn">from</span> <span class="nn">cxt.utils</span> <span class="kn">import</span> <span class="n">simulate_parameterized_tree_sequence</span><span class="p">,</span> <span class="n">TIMES</span>
-
-<span class="n">device</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">set_float32_matmul_precision</span><span class="p">(</span><span class="s1">&#39;medium&#39;</span><span class="p">)</span>
-<span class="n">mse</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">yhat</span><span class="p">,</span> <span class="n">ytrue</span><span class="p">:</span> <span class="p">((</span><span class="n">yhat</span> <span class="o">-</span> <span class="n">ytrue</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Model configuration and loading it. The was trained using Pytorch Lighting.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">B</span> <span class="o">=</span> <span class="mi">1225</span>
-<span class="k">class</span> <span class="nc">TokenFreeDecoderConfig</span><span class="p">:</span>
-    <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span>
-    <span class="n">sample_scale_embd</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">output_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">256</span><span class="o">+</span><span class="mi">2</span>
-    <span class="n">n_embd</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span>
-    <span class="n">combined_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1001</span>
-    <span class="n">n_layer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span>
-    <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
-    <span class="n">n_head</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span>
-    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">B</span>
-
-
-<span class="n">model_path</span> <span class="o">=</span> <span class="s1">&#39;../cxt/lightning_logs/version_8/checkpoints/epoch=4-step=16160.ckpt&#39;</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">TokenFreeDecoderConfig</span><span class="p">()</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">model_path</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">TokenFreeDecoderConfig</span><span class="p">(),</span>
+    <span class="n">model_path</span><span class="o">=</span><span class="s1">&#39;../cxt/models/base_model/checkpoints/epoch=4-step=16160.ckpt&#39;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>Simulating the data.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">SEED</span> <span class="o">=</span> <span class="mi">102000</span>
-<span class="n">ts</span> <span class="o">=</span> <span class="n">simulate_parameterized_tree_sequence</span><span class="p">(</span><span class="n">SEED</span><span class="p">,</span> <span class="n">sequence_length</span><span class="o">=</span><span class="mf">1e6</span><span class="p">)</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="n">simulate_parameterized_tree_sequence</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>
 <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span> <span class="o">=</span> <span class="n">prepare_ts_data</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">1225</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -135,28 +121,17 @@ simulated fragment.</p>
 to be reset to zero. In order to avoid running unnessary replicates, a simple
 heuristic has been implemented to stop the inference when the derivative of the mse
 is overall samples becomes less than less than 0.001.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">num_layers</span> <span class="o">=</span> <span class="mi">6</span>
-<span class="n">max_replicates</span> <span class="o">=</span> <span class="mi">20</span>
-
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">max_replicates</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">yhats</span><span class="p">,</span> <span class="n">ytrues</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-<span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="n">mses</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_replicates</span><span class="p">):</span>
-
-    <span class="c1"># reset cache</span>
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span><span class="p">):</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">attn</span><span class="o">.</span><span class="n">cache_k</span> <span class="o">*=</span> <span class="mf">0.</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">attn</span><span class="o">.</span><span class="n">cache_v</span> <span class="o">*=</span> <span class="mf">0.</span>
-
-    <span class="n">sequence</span> <span class="o">=</span> <span class="n">generate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">sequence</span> <span class="o">=</span> <span class="n">generate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">1225</span><span class="p">)</span>
     <span class="n">yhat</span><span class="p">,</span> <span class="n">ytrue</span> <span class="o">=</span> <span class="n">post_process</span><span class="p">(</span><span class="n">tgt</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">TIMES</span><span class="p">)</span>
-    <span class="n">mses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mse</span><span class="p">(</span><span class="n">yhat</span><span class="p">,</span> <span class="n">ytrue</span><span class="p">))</span>
     <span class="n">yhats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">yhat</span><span class="p">)</span>
     <span class="n">ytrues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ytrue</span><span class="p">)</span>
 
     <span class="c1"># early stopping criteria</span>
     <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">mses</span> <span class="o">=</span> <span class="n">decreasing_mses</span><span class="p">(</span><span class="n">yhats</span><span class="p">,</span> <span class="n">ytrues</span><span class="p">)</span>
+        <span class="n">mses</span> <span class="o">=</span> <span class="n">accumulating_mses</span><span class="p">(</span><span class="n">yhats</span><span class="p">,</span> <span class="n">ytrues</span><span class="p">)</span>
         <span class="n">derivatives</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">mses</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">derivatives</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mf">0.001</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stopping at </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> because derivative is </span><span class="si">{</span><span class="n">derivatives</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
@@ -169,12 +144,24 @@ is overall samples becomes less than less than 0.001.</p>
 </section>
 <section id="out-of-sample-sawooth-demography-inference-no-fine-tuning">
 <h2>Out-of-sample: Sawooth Demography Inference (no fine-tuning)<a class="headerlink" href="#out-of-sample-sawooth-demography-inference-no-fine-tuning" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_sawtooth_no_finetune.png"><img alt="Alternative text" src="_images/inference_scatter_cxtkit_sawtooth_no_finetune.png" style="width: 800px;" />
+</a>
 </section>
 <section id="rescue-sawooth-demography-inference-with-fine-tuning">
 <h2>Rescue: Sawooth Demography Inference (with fine-tuning)<a class="headerlink" href="#rescue-sawooth-demography-inference-with-fine-tuning" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_sawtooth_with_finetune.png"><img alt="Alternative text" src="_images/inference_scatter_cxtkit_sawtooth_with_finetune.png" style="width: 800px;" />
+</a>
 </section>
 <section id="out-of-sample-island-demography-inference-no-fine-tuning">
 <h2>Out-of-sample: Island Demography Inference (no fine-tuning)<a class="headerlink" href="#out-of-sample-island-demography-inference-no-fine-tuning" title="Link to this heading"></a></h2>
+<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_island_no_finetune.png"><img alt="Alternative text" src="_images/inference_scatter_cxtkit_island_no_finetune.png" style="width: 800px;" />
+</a>
+</section>
+<section id="rescue-island-demography-inference-with-fine-tuning">
+<h2>“Rescue”: Island Demography Inference (with fine-tuning)<a class="headerlink" href="#rescue-island-demography-inference-with-fine-tuning" title="Link to this heading"></a></h2>
+<p>Why mode-collapse?</p>
+<a class="reference internal image-reference" href="_images/inference_scatter_cxtkit_island_with_finetune.png"><img alt="Alternative text" src="_images/inference_scatter_cxtkit_island_with_finetune.png" style="width: 800px;" />
+</a>
 </section>
 </section>
 

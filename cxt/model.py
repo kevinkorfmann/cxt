@@ -34,6 +34,11 @@ class TokenFreeDecoder(nn.Module):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
 
+    def clear_cache(self):
+        for i in range(self.config.n_layer):
+            self.transformer.h[i].attn.cache_k *= 0. 
+            self.transformer.h[i].attn.cache_v *= 0. 
+
     def forward(self, x, y, attn_mask, position=None, use_cache=False, calculate_loss=True):
 
         if use_cache:
