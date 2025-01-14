@@ -55,17 +55,18 @@ def generate_data(args) -> tuple:
     """
     i, pivot_A, pivot_B, ts_simulation_func, randomize_pivots = args 
     ts = ts_simulation_func(i)
-
-    # processing
-    Xxor = ts2X_vectorized(ts, window_size=2000, xor_ops=xor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
-    Xxnor = ts2X_vectorized(ts, window_size=2000, xor_ops=xnor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
-    X = np.stack([Xxor, Xxnor], axis=0).astype(np.float16)
     
     if randomize_pivots:
         pivots = np.arange(0, 50)
         np.random.shuffle(pivots)
         pivot_A = pivots[0]
         pivot_B = pivots[1]
+
+    # processing
+    Xxor = ts2X_vectorized(ts, window_size=2000, xor_ops=xor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
+    Xxnor = ts2X_vectorized(ts, window_size=2000, xor_ops=xnor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
+    X = np.stack([Xxor, Xxnor], axis=0).astype(np.float16)
+        
     y = np.log(interpolate_tmrcas(ts.simplify(samples=[pivot_A, pivot_B]), window_size=2000)).astype(np.float16)
     return X, y
 
