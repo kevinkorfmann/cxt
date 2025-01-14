@@ -28,8 +28,9 @@
 
           
           
-          <a href="../../index.html" class="icon icon-home">
-            cxt
+          <a href="../../index.html">
+            
+              <img src="../../_static/logo_3d_2.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -42,9 +43,12 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial for Inference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../simulation.html">Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training.html">Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../comparison.html">Comparisons with other tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gallery.html">Gallery</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API documentation</a></li>
 </ul>
 
@@ -135,17 +139,18 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">i</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">ts_simulation_func</span><span class="p">,</span> <span class="n">randomize_pivots</span> <span class="o">=</span> <span class="n">args</span> 
     <span class="n">ts</span> <span class="o">=</span> <span class="n">ts_simulation_func</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-
-    <span class="c1"># processing</span>
-    <span class="n">Xxor</span> <span class="o">=</span> <span class="n">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="n">pivot_B</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
-    <span class="n">Xxnor</span> <span class="o">=</span> <span class="n">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xnor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="n">pivot_B</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">Xxor</span><span class="p">,</span> <span class="n">Xxnor</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
     
     <span class="k">if</span> <span class="n">randomize_pivots</span><span class="p">:</span>
         <span class="n">pivots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
         <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">pivots</span><span class="p">)</span>
         <span class="n">pivot_A</span> <span class="o">=</span> <span class="n">pivots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">pivot_B</span> <span class="o">=</span> <span class="n">pivots</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># processing</span>
+    <span class="n">Xxor</span> <span class="o">=</span> <span class="n">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="n">pivot_B</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+    <span class="n">Xxnor</span> <span class="o">=</span> <span class="n">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xnor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="n">pivot_B</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">Xxor</span><span class="p">,</span> <span class="n">Xxnor</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+        
     <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">interpolate_tmrcas</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="p">[</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">]),</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span></div>
 
@@ -254,7 +259,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Kevin Korfmann.</p>
+    <p>&#169; Copyright 2024, Kevin Korfmann | Logo designed by Negar Rahnamae.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -17,20 +17,19 @@ To fine-tune the model, use the following command for the sawtooth demography da
         --num_epochs 2 \ 
         --learning_rate 3e-5 \
         --test_batches 20 \ 
-        --checkpoint_path ../cxt/lightning_logs/version_8/checkpoints/epoch=4-step=16160.ckpt
+        --checkpoint_path ./models/base_model/checkpoints/epoch=4-step=16160.ckpt
 
 
 Or for the island demography dataset (idd):
 
 .. code-block:: bash
 
-    python train.py --dataset_path /sietch_colab/kkor/idd \ 
-        --gpus 0 1 \ 
-        --num_epochs 2 \ 
+    python train.py --dataset_path /sietch_colab/kkor/idd \
+        --gpus 0 1 \
+        --num_epochs 2 \
         --learning_rate 3e-5 \
         --test_batches 20 \
-        --checkpoint_path ../cxt/lightning_logs/version_8/checkpoints/epoch=4-step=16160.ckpt
-    
+        --checkpoint_path ./models/base_model/checkpoints/epoch=4-step=16160.ckpt
 
 
 

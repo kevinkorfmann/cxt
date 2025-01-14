@@ -110,7 +110,13 @@ Singer is method developed by Deng et al. (2024) and accesible here: https://git
   :width: 400
   :alt: Sawooth demography inference 
 
-**For some unknown reason, the island demography inference failed to using Singer for now.**
+**For some unknown reason, the island demography inference failed using Singer for some of MCMC replicates now. Below only 25 iterations are used instead of the usual 100.**
+
+.. image:: ./inference_scatter_singer_island.png
+  :width: 400
+  :alt: Island demography inference 
+
+**TODO: Check how the MSE in Singer improves with more iterations from 1 - 100.**
 
 Gamma-SMC
 ---------

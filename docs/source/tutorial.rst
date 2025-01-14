@@ -131,20 +131,18 @@ easier to capture for the model).
 
 
 Out-of-sample: Island Demography Inference (no fine-tuning)
--------------------------------------------------------------
+-----------------------------------------------------------
 
-The island demography model with three populations and migration between suprisingly leads to accuratly
-infered pairwise coalescence times only in the non-fined-tuned version of the model. The fine-tuned model
-suffers from mode-collapse, whose origing is not yet fully understood.
+The island demography model with three populations and migration between leads to accuratly
+infered pairwise coalescence times.
 
 .. image:: ./inference_scatter_cxtkit_island_no_finetune.png
   :width: 400
   :alt: Island demography inference without fine-tuning
 
-"Rescue": Island Demography Inference (with fine-tuning)
--------------------------------------------------------------
+Rescue: Island Demography Inference (with fine-tuning)
+------------------------------------------------------
 
-Described mode-collapse ...
 
 .. image:: ./inference_scatter_cxtkit_island_with_finetune.png
   :width: 400
