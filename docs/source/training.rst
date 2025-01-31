@@ -32,4 +32,9 @@ Or for the island demography dataset (idd):
         --checkpoint_path ./models/base_model/checkpoints/epoch=4-step=16160.ckpt
 
 
+LLM training, the directory llm contains main subdirectories for various scenarios, ranging from constant, to variable population sizes, including sweeps and island models.
 
+
+.. code-block:: bash
+
+    python train.py --dataset_path /sietch_colab/kkor/llm --gpus 0  --num_epochs 5

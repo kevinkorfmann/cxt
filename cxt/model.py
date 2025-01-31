@@ -38,6 +38,11 @@ class TokenFreeDecoder(nn.Module):
         for i in range(self.config.n_layer):
             self.transformer.h[i].attn.cache_k *= 0. 
             self.transformer.h[i].attn.cache_v *= 0. 
+    
+    def cache_to_device(self, device):
+        for i in range(self.config.n_layer):
+            self.transformer.h[i].attn.cache_k = self.transformer.h[i].attn.cache_k.to(device)
+            self.transformer.h[i].attn.cache_v = self.transformer.h[i].attn.cache_v.to(device)
 
     def forward(self, x, y, attn_mask, position=None, use_cache=False, calculate_loss=True):
 

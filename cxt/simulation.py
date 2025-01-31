@@ -10,6 +10,7 @@ from cxt.utils import simulate_parameterized_tree_sequence, interpolate_tmrcas
 import argparse
 
 
+
 def create_sawtooth_demogaphy_object(Ne = 2*10**4, magnitue=4):
     demography = msprime.Demography()
     demography.add_population(initial_size=(Ne))
@@ -133,7 +134,9 @@ if __name__ == '__main__':
     parser.add_argument('--pivot_A', type=int, default=0, help='Pivot A index')
     parser.add_argument('--pivot_B', type=int, default=1, help='Pivot B index')
     parser.add_argument('--data_dir', type=str, default='/sietch_colab/kkor/tiny_batches_base_dataset', help='Directory to save data')
-    parser.add_argument('--scenario', type=str, choices=['constant', 'sawtooth', 'island'], default='constant', help='Scenario type')
+    parser.add_argument('--scenario', type=str, choices=[
+        'constant', 'sawtooth', 'island','llm_ne_constant','llm_ne_sawtooth','llm_island_3pop','llm_island_5pop','llm_hard_sweeps'
+    ], default='constant', help='Scenario type')
     parser.add_argument('--randomize_pivots', default=False, help='Randomize pivot indices')
     args = parser.parse_args()
 
@@ -147,6 +150,7 @@ if __name__ == '__main__':
     scenario = args.scenario
     randomize_pivots = args.randomize_pivots
 
+
     if scenario == "constant":
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence, randomize_pivots)
 
@@ -159,3 +163,74 @@ if __name__ == '__main__':
         island_demography = msprime.Demography.island_model([10000, 5000, 5000], migration_rate=0.1)
         simulate_parameterized_tree_sequence_island = partial(simulate_parameterized_tree_sequence, island_demography=island_demography, samples=samples)
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence_island, randomize_pivots)
+
+    elif scenario == "llm_ne_constant":
+        for population_size in [8e4]: # 1e4, 2e4, 4e4, 8e4
+            for mutation_rate in [1e-8, 5e-8]:
+                for recombination_rate in [1e-8, 5e-8]:
+                    if mutation_rate == 5e-8 and recombination_rate == 5e-8:
+                        continue
+                    sim_func = partial(simulate_parameterized_tree_sequence, population_size=population_size, mutation_rate=mutation_rate, recombination_rate=recombination_rate)
+                    sub_data_dir = f"ne_constant_{population_size:.0e}_{mutation_rate:.1e}_{recombination_rate:.1e}"
+                    save_dir = f"{data_dir}/{sub_data_dir}"
+                    process_batches(num_samples, start_batch, batch_size, num_processes, save_dir, pivot_A, pivot_B, sim_func, randomize_pivots)
+
+    elif scenario ==  "llm_ne_sawtooth":
+        for magnitude in [3, 4, 5]:
+            for population_size in [1e4, 2e4, 4e4]:
+                for mutation_rate in [1e-8, 5e-8]:
+                    for recombination_rate in [1e-8, 5e-8]:
+                        if mutation_rate == 5e-8 and recombination_rate == 5e-8:
+                            continue
+                        sim_func = partial(simulate_parameterized_tree_sequence, demography=create_sawtooth_demogaphy_object(Ne=population_size,magnitue=magnitude), mutation_rate=mutation_rate, recombination_rate=recombination_rate)
+                        
+                        sub_data_dir = f"ne_sawtooth_{magnitude}_{population_size:.0e}_{mutation_rate:.1e}_{recombination_rate:.1e}"
+                        save_dir = f"{data_dir}/{sub_data_dir}"
+                        process_batches(num_samples, start_batch, batch_size, num_processes, save_dir, pivot_A, pivot_B, sim_func, randomize_pivots)
+
+    elif scenario == "llm_island_3pop":
+        for migration_rate in [0.2]: # 0.05, 0.2
+            for population_size in [2e4, 4e4]: # 1e4, 2e4, 4e4
+                for mutation_rate in [1e-8, 5e-8]:
+                    for recombination_rate in [1e-8, 5e-8]:
+                        if mutation_rate == 5e-8 and recombination_rate == 5e-8:
+                            continue
+                        samples = {0: 15, 1: 5, 2: 5}
+                        island_demography = msprime.Demography.island_model([population_size, population_size/2, population_size/2], migration_rate=migration_rate)
+                        sim_func = partial(simulate_parameterized_tree_sequence, island_demography=island_demography, samples=samples, mutation_rate=mutation_rate, recombination_rate=recombination_rate)
+                        sub_data_dir = f"island_3pop_{migration_rate}_{population_size:.0e}_{mutation_rate:.1e}_{recombination_rate:.1e}"
+                        save_dir = f"{data_dir}/{sub_data_dir}"
+                        process_batches(num_samples, start_batch, batch_size, num_processes, save_dir, pivot_A, pivot_B, sim_func, randomize_pivots)
+
+    elif scenario == "llm_island_5pop":
+        for migration_rate in [0.05, 0.2]:
+            for population_size in [1e4, 2e4, 4e4]:
+                for mutation_rate in [1e-8, 5e-8]:
+                    for recombination_rate in [1e-8, 5e-8]:
+                        if mutation_rate == 5e-8 and recombination_rate == 5e-8:
+                            continue
+                        samples = {0: 5, 1: 5, 2: 5, 3: 5, 4: 5}
+                        island_demography = msprime.Demography.island_model([population_size, population_size/4, population_size/4, population_size/4, population_size/4], migration_rate=migration_rate)
+                        sim_func = partial(simulate_parameterized_tree_sequence, island_demography=island_demography, samples=samples, mutation_rate=mutation_rate, recombination_rate=recombination_rate)
+                        sub_data_dir = f"island_5pop_{migration_rate}_{population_size:.0e}_{mutation_rate:.1e}_{recombination_rate:.1e}"
+                        save_dir = f"{data_dir}/{sub_data_dir}"
+                        process_batches(num_samples, start_batch, batch_size, num_processes, save_dir, pivot_A, pivot_B, sim_func, randomize_pivots)
+
+    elif scenario == "llm_hard_sweeps":
+        np.random.seed(42)
+        for population_size in [1e4, 2e4, 4e4]:
+            for mutation_rate in [1e-8, 5e-8]:
+                for recombination_rate in [1e-8, 5e-8]:
+                    for selection_coefficient in [0.01, 0.1, 1]:
+                        selection_position = np.random.choice([0.25e6, 0.5e6, 0.75e6])
+                        if mutation_rate == 5e-8 and recombination_rate == 5e-8:
+                            continue
+                        sim_func = partial(
+                            simulate_parameterized_tree_sequence, population_size=population_size,
+                            mutation_rate=mutation_rate, recombination_rate=recombination_rate,
+                            hard_sweep=True, selection_coefficient=selection_coefficient, selection_position=selection_position)
+                        sub_data_dir = f"hard_sweeps_{selection_coefficient}_{selection_position:.1e}_{population_size:.0e}_{mutation_rate:.1e}_{recombination_rate:.1e}"
+                        save_dir = f"{data_dir}/{sub_data_dir}"
+                        process_batches(num_samples, start_batch, batch_size, num_processes, save_dir, pivot_A, pivot_B, sim_func, randomize_pivots)
+    
+

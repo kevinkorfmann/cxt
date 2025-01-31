@@ -27,11 +27,15 @@ def simulate_parameterized_tree_sequence(
         mutation_rate=1.29e-8,
         demography=None,
         island_demography=None, #msprime.Demography.island_model([10000, 5000, 5000], migration_rate=0.1)
+        hard_sweep=None,
+        selection_coefficient=None,
+        selection_position=0.5e6
         ):
     np.random.seed(seed)
     SEED = np.random.uniform(1, 2**32 - 1)
 
-    assert demography is None or island_demography is None
+    assert sum(x is not None for x in [demography, island_demography, hard_sweep]) in [0, 1]
+
     if demography:
         ts = msprime.sim_ancestry(
             samples=samples, 
@@ -44,6 +48,22 @@ def simulate_parameterized_tree_sequence(
             sequence_length=sequence_length,
             demography=island_demography,
             recombination_rate=recombination_rate, ploidy=ploidy, random_seed=SEED)
+    elif hard_sweep:
+        sweep_model = msprime.SweepGenicSelection(
+        position=selection_position,  
+        start_frequency=1.0 / (population_size),
+        end_frequency=1.0 - (1.0 / (population_size)),
+        s=selection_coefficient,
+        dt=1e-6
+    )
+        ts = msprime.sim_ancestry(
+            samples=samples,
+            model=[sweep_model, msprime.StandardCoalescent()],
+            population_size=population_size,
+            recombination_rate=recombination_rate,
+            sequence_length=sequence_length,
+        )
+
     else:
         ts = msprime.sim_ancestry(
             samples=samples, 

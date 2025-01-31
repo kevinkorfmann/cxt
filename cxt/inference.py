@@ -60,6 +60,7 @@ def load_model(config, model_path=None, device='cuda'):
         weights_only=False)['state_dict'], strict=False)
     model = model.model
     model.to(device=device)
+    model.cache_to_device(device)
     model.eval()
     return model
 
@@ -91,19 +92,21 @@ def translate_from_ts(
         ts,
         max_replicates = 20, use_early_stopping = True,
         model_config=None,
-        model_path=None
+        model_path=None,
+        device='cuda'
     ):
     """Assumes sample size of 50 for now and large enough GPU to fit 1225 batch."""
 
     model = load_model(
         config=model_config, 
-        model_path=model_path
+        model_path=model_path,
+        device=device
     )
 
-    src, tgt = prepare_ts_data(ts, num_samples=50, B=1225)
+    src, tgt = prepare_ts_data(ts, num_samples=50, B=1225, device=device)
     yhats, ytrues = [], []
     for i in range(max_replicates):
-        sequence = generate(model, src, B=1225)
+        sequence = generate(model, src, B=1225, device=device)
         yhat, ytrue = post_process(tgt, sequence, TIMES)
         yhats.append(yhat)
         ytrues.append(ytrue)
@@ -115,6 +118,8 @@ def translate_from_ts(
                 if abs(derivatives[-1]) < 0.001:
                     print(f"Stopping at {i} because derivative is {derivatives[-1]}.")
                     break
+    yhats = np.stack(yhats)
+    ytrues = np.stack(ytrues)  
     return yhats, ytrues
 
 

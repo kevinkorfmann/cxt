@@ -1,4 +1,5 @@
 # TokenFreeDecoder
+import os
 import torch
 import numpy as np
 import lightning as L
@@ -6,13 +7,16 @@ torch.random.manual_seed(0)
 from dataclasses import dataclass
 from cxt.model import TokenFreeDecoder
 from torch.utils.data import DataLoader
-from cxt.dataset import LazyDataset
+from cxt.dataset import LazyDataset, MultiDirLazyDataset
 import math
 import argparse
 
-def generate_causal_mask(seq_len, device):
-    mask = torch.tril(torch.ones((seq_len, seq_len), device=device)).bool()
-    return mask.unsqueeze(0).unsqueeze(0)  # [1, 1, T, T]
+
+def generate_causal_mask(seq_len, full_attention_n=None, device="cpu"):
+    full_attention_n = full_attention_n if full_attention_n is not None else 0
+    mask = torch.tril(torch.ones(seq_len, seq_len, device=device))
+    mask[:full_attention_n, :full_attention_n] = 1  # Full attention for first n tokens
+    return mask.bool().unsqueeze(0).unsqueeze(0)
 
 num_gpus = 4
 config = {
@@ -53,7 +57,7 @@ class LitTokenFreeDecoder(L.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         #with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
-        attn_mask = generate_causal_mask(1001, 'cuda')
+        attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
         attn_mask = attn_mask.repeat(x.size(0), 1, 1, 1)
         logits, loss = self.model(x, y, attn_mask)
         # Log metrics
@@ -62,7 +66,7 @@ class LitTokenFreeDecoder(L.LightningModule):
         return loss
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        attn_mask = generate_causal_mask(1001, 'cuda')
+        attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
         attn_mask = attn_mask.repeat(x.size(0), 1, 1, 1)
         #with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
         logits, loss = self.model(x, y, attn_mask)
@@ -118,16 +122,29 @@ if __name__ == "__main__":
     test_batches = args.test_batches
     config['training']['max_lr'] = learning_rate
     
-    train_dataset = LazyDataset(dataset_path, split='train', test_batches=test_batches)
-    test_dataset = LazyDataset(dataset_path, split='test', test_batches=test_batches)
-    print(f"training dataset {len(train_dataset)} samples")
-    print(f"test dataset {len(test_dataset)} samples")
+
+    # Check if dataset_path contains multiple subdirectories
+    subdirs = [d for d in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, d))]
+    if len(subdirs) > 1:
+        train_dataset = MultiDirLazyDataset(root_dir=dataset_path, split='train', test_ratio=0.1)
+        test_dataset = MultiDirLazyDataset(root_dir=dataset_path, split='test', test_ratio=0.1)
+        print(f"Training samples: {len(train_dataset)}")
+        print(f"Testing samples: {len(test_dataset)}")
+    else:
+        train_dataset = LazyDataset(dataset_path, split='train', test_batches=test_batches)
+        test_dataset = LazyDataset(dataset_path, split='test', test_batches=test_batches)
+        print(f"training dataset {len(train_dataset)} samples")
+        print(f"test dataset {len(test_dataset)} samples")
+    
+
+    
+
     train_loader = DataLoader(
         train_dataset,
         batch_size=config['training']['batch_size'],
         num_workers=config['training']['num_workers'],
         pin_memory=True,
-        shuffle=False,
+        shuffle=True, # shuffles since LLM dataset
         persistent_workers=True,
     )
     test_loader = DataLoader(
