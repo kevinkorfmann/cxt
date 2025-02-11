@@ -8,13 +8,8 @@ from multiprocessing import Pool
 from cxt.utils import ts2X_vectorized
 from cxt.utils import simulate_parameterized_tree_sequence, interpolate_tmrcas
 import argparse
-import random
-import stdpopsim
-import numpy as np
-from typing import List, Dict, Optional
 
-import warnings
-warnings.filterwarnings("ignore")
+
 
 def create_sawtooth_demogaphy_object(Ne = 2*10**4, magnitue=4):
     demography = msprime.Demography()
@@ -35,95 +30,6 @@ def create_sawtooth_demogaphy_object(Ne = 2*10**4, magnitue=4):
     demography.add_population_parameters_change(time=20000000, growth_rate=0,initial_size=Ne)
     return demography
 
-
-
-def random_sample_counts(
-    sampling_populations: List[int], num_samples: int = 25, seed: Optional[int] = None
-) -> Dict[str, int]:
-    """
-    Randomly distributes `n` samples across the given populations.
-
-    :param list sampling_populations: Populations to sample from, each with a `.name` attribute.
-    :param int num_samples: Number of samples to draw.
-    :param int seed: Optional seed for reproducibility.
-
-    :return: Dictionary mapping population names to sample counts.
-    :rtype: dict
-    """
-    rng = random.Random(seed)
-    sampled_counts = {pop.name: 0 for pop in sampling_populations}  
-    for pop in rng.choices(sampling_populations, k=num_samples):
-        sampled_counts[pop.name] += 1  
-    return sampled_counts
-
-
-def sampling_populations(demography):
-    return [pop for pop in demography.populations if pop.allow_samples]
-
-
-def simulate_random_human_segment(
-    seed, num_samples=25, segment_length=1e6, last_chromosome=22, species_name="HomSap", genetic_map=None,
-):
-    """Simulates a random human genomic segment using stdpopsim and msprime."""
-
-    init_seed = seed
-    np.random.seed(seed)
-    seed = np.random.randint(1, 2**32)
-
-    species = stdpopsim.get_species(species_name)
-    chromosome = species.genome.chromosomes[np.random.randint(0, last_chromosome)]
-    left = np.random.uniform(chromosome.length - segment_length)
-    right = left + segment_length
-
-    demography = np.random.choice(species.demographic_models)
-
-    valid_models = [
-    model for model in species.demographic_models 
-    if model.description not in {
-        'Multi-population model of ancient Eurasia',
-        'Out-of-Africa with archaic admixture into Papuans',
-        'Multi-population model of ancient Europe'
-    }
-]
-    #while demography.description == 'Multi-population model of ancient Eurasia' or demography.description == 'Out-of-Africa with archaic admixture into Papuans' or demography.description == 'Multi-population model of ancient Europe':
-    demography = np.random.choice(valid_models)
-
-    
-    populations = sampling_populations(demography)
-    samples = random_sample_counts(populations, num_samples=num_samples, seed=seed)
-
-
-
-    if genetic_map is not None:
-        whole_contig = species.get_contig(
-            chromosome.synonyms[0], mutation_rate=demography.mutation_rate, genetic_map=genetic_map
-        )
-        
-        while True:
-            left = np.random.uniform(0, chromosome.length - segment_length)
-            right = left + segment_length
-            left_mask = whole_contig.recombination_map.left >= left
-            right_mask = whole_contig.recombination_map.right < right
-            if not left_mask.any() or not right_mask.any():
-                continue  
-            contig = species.get_contig(
-                chromosome.synonyms[0], left=left, right=right, 
-                mutation_rate=demography.mutation_rate, genetic_map=genetic_map)
-            if not np.isnan(contig.recombination_map.rate).any():
-                break  
-
-        engine = stdpopsim.get_engine("msprime")
-        ts = engine.simulate(demography, contig, samples, seed=seed)
-
-    else:
-        contig = species.get_contig(
-            chromosome.synonyms[0], left=left, right=right, 
-            mutation_rate=demography.mutation_rate
-        )
-        engine = stdpopsim.get_engine("msprime")
-        ts = engine.simulate(demography, contig, samples, seed=seed)
-
-    return ts
 
 
 def generate_data(args) -> tuple:
@@ -150,7 +56,6 @@ def generate_data(args) -> tuple:
     """
     i, pivot_A, pivot_B, ts_simulation_func, randomize_pivots = args 
     ts = ts_simulation_func(i)
-    #print(i)
     
     if randomize_pivots:
         pivots = np.arange(0, 50)
@@ -159,7 +64,6 @@ def generate_data(args) -> tuple:
         pivot_B = pivots[1]
 
     # processing
-    #print(ts.num_trees, ts.num_sites)
     Xxor = ts2X_vectorized(ts, window_size=2000, xor_ops=xor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
     Xxnor = ts2X_vectorized(ts, window_size=2000, xor_ops=xnor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
     X = np.stack([Xxor, Xxnor], axis=0).astype(np.float16)
@@ -214,7 +118,6 @@ def process_batches(num_samples: int, start_batch: int,
 
         for i, result in enumerate(tqdm(pool.imap(generate_data, args), total=num_samples-start_sample)):
             batch.append(result)
-            #print(len(result))
             if len(batch) == batch_size or i == num_samples - 1:
                 save_batch(batch, batch_idx, output_dir)
                 batch = []
@@ -232,10 +135,9 @@ if __name__ == '__main__':
     parser.add_argument('--pivot_B', type=int, default=1, help='Pivot B index')
     parser.add_argument('--data_dir', type=str, default='/sietch_colab/kkor/tiny_batches_base_dataset', help='Directory to save data')
     parser.add_argument('--scenario', type=str, choices=[
-        'constant', 'sawtooth','stdpopsim_nogeneticmap','stdpopsim_geneticmap', 'island','llm_ne_constant','llm_ne_sawtooth','llm_island_3pop','llm_island_5pop','llm_hard_sweeps'
+        'constant', 'sawtooth', 'island','llm_ne_constant','llm_ne_sawtooth','llm_island_3pop','llm_island_5pop','llm_hard_sweeps'
     ], default='constant', help='Scenario type')
     parser.add_argument('--randomize_pivots', default=False, help='Randomize pivot indices')
-    parser.add_argument('--genetic_map', type=str, default=None, help='Genetic map, e.g. HapMapII_GRCh38')
     args = parser.parse_args()
 
     num_processes = args.num_processes
@@ -247,7 +149,6 @@ if __name__ == '__main__':
     data_dir = args.data_dir
     scenario = args.scenario
     randomize_pivots = args.randomize_pivots
-    genetic_map = args.genetic_map
 
 
     if scenario == "constant":
@@ -262,12 +163,6 @@ if __name__ == '__main__':
         island_demography = msprime.Demography.island_model([10000, 5000, 5000], migration_rate=0.1)
         simulate_parameterized_tree_sequence_island = partial(simulate_parameterized_tree_sequence, island_demography=island_demography, samples=samples)
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence_island, randomize_pivots)
-
-    elif scenario == "stdpopsim_nogeneticmap":
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_random_human_segment, randomize_pivots)
-
-    elif scenario == "stdpopsim_geneticmap":
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_human_segment, genetic_map=genetic_map), randomize_pivots)
 
     elif scenario == "llm_ne_constant":
         for population_size in [8e4]: # 1e4, 2e4, 4e4, 8e4

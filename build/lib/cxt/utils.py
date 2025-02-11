@@ -94,13 +94,7 @@ def ts2X_vectorized(ts, window_size=4000, step_size=2000, xor_ops=xor, pivot_A=0
     """Memory-efficient conversion of tree sequence to feature matrix"""
     site_positions = retrieve_site_positions(ts)
     gm = ts.genotype_matrix().T
-
-    mask = np.logical_or(np.any(gm >= 2, axis=0), gm.sum(0) >= ts.num_samples)
-    gm = gm[:, ~mask]
-    site_positions = site_positions[~mask]
-
     num_samples = gm.shape[0]
-    
     frequencies = gm.sum(0)
     sequence_length = ts.sequence_length
     
