@@ -98,8 +98,11 @@ class CausalSelfAttention(nn.Module):
         self.rotary_emb = RotaryPositionalEmbeddings(dim=self.head_size, max_seq_len=1001)
         self.layer_index = torch.tensor(i)
         # KV Cache
-        self.cache_k = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size)).cuda()
-        self.cache_v = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size)).cuda()
+        #self.cache_k = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size), dtype=torch.bfloat16).to(config.device)
+        #self.cache_v = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size), dtype=torch.bfloat16).to(config.device)
+        self.cache_k = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size)).to(config.device)
+        self.cache_v = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size)).to(config.device)
+
 
     def forward(self, x, attn_mask, position=None, use_cache=False):
         B, T, C = x.size()
@@ -130,7 +133,13 @@ class CausalSelfAttention(nn.Module):
             if position == 0: attn_mask = attn_mask[:, :, :q.size(-2), :k.size(-2)]
             else: attn_mask = attn_mask[:, :, position, :k.size(-2)].unsqueeze(2)
 
-
+        #if use_cache:
+        #    original_dtype = q.dtype
+        #    q, k, v = q.to(torch.bfloat16), k.to(torch.bfloat16), v.to(torch.bfloat16)
+        #    attn_mask = attn_mask.to(torch.bfloat16)
+        #    y = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
+        #    y = y.to(original_dtype)
+        #else:
         y = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask)
         y = y.transpose(1, 2).contiguous().view(B, -1, C)
         y = self.resid_dropout(self.c_proj(y))

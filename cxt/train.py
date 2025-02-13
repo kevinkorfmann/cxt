@@ -57,7 +57,8 @@ class LitTokenFreeDecoder(L.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         #with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
-        attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
+        #attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
+        attn_mask = generate_causal_mask(1001, device='cuda')
         attn_mask = attn_mask.repeat(x.size(0), 1, 1, 1)
         logits, loss = self.model(x, y, attn_mask)
         # Log metrics
@@ -66,7 +67,8 @@ class LitTokenFreeDecoder(L.LightningModule):
         return loss
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
+        #attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
+        attn_mask = generate_causal_mask(1001, device='cuda')
         attn_mask = attn_mask.repeat(x.size(0), 1, 1, 1)
         #with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
         logits, loss = self.model(x, y, attn_mask)

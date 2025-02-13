@@ -187,9 +187,15 @@ def ts2input_numpy(ts, pivot_A, pivot_B):
     tgt = np.concatenate([[1], tgt + 2])  # Add special token and shift indices
     return src, tgt
 
-def generate_causal_mask(seq_len, device):
-    mask = torch.tril(torch.ones((seq_len, seq_len), device=device)).bool()
-    return mask.unsqueeze(0).unsqueeze(0)  # [1, 1, T, T]
+#def generate_causal_mask(seq_len, device):
+#    mask = torch.tril(torch.ones((seq_len, seq_len), device=device)).bool()
+#    return mask.unsqueeze(0).unsqueeze(0)  # [1, 1, T, T]
+
+def generate_causal_mask(seq_len, full_attention_n=None, device="cpu"):
+    full_attention_n = full_attention_n if full_attention_n is not None else 0
+    mask = torch.tril(torch.ones(seq_len, seq_len, device=device))
+    mask[:full_attention_n, :full_attention_n] = 1  # Full attention for first n tokens
+    return mask.bool().unsqueeze(0).unsqueeze(0)
 
 
 
