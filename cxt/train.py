@@ -39,12 +39,12 @@ class TokenFreeDecoderConfig:
     num_samples: int = 50
     sample_scale_embd: int = 2
     output_dim: int = 256+2
-    n_embd: int = 400
+    n_embd: int = 400 #768
     combined_dim: int = 1001
-    n_layer: int = 6
+    n_layer: int = 6 #12
     bias: bool = False
     dropout: float = 0.1
-    n_head: int = 4
+    n_head: int = 4 #8
     device: str = "cuda"
     batch_size: int = config['training']['batch_size']
 
@@ -57,8 +57,8 @@ class LitTokenFreeDecoder(L.LightningModule):
     def training_step(self, batch, batch_idx):
         x, y = batch
         #with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
-        #attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
-        attn_mask = generate_causal_mask(1001, device='cuda')
+        attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
+        #attn_mask = generate_causal_mask(1001, device='cuda')
         attn_mask = attn_mask.repeat(x.size(0), 1, 1, 1)
         logits, loss = self.model(x, y, attn_mask)
         # Log metrics
@@ -67,8 +67,8 @@ class LitTokenFreeDecoder(L.LightningModule):
         return loss
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        #attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
-        attn_mask = generate_causal_mask(1001, device='cuda')
+        attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
+        #attn_mask = generate_causal_mask(1001, device='cuda')
         attn_mask = attn_mask.repeat(x.size(0), 1, 1, 1)
         #with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
         logits, loss = self.model(x, y, attn_mask)
@@ -128,11 +128,13 @@ if __name__ == "__main__":
     # Check if dataset_path contains multiple subdirectories
     subdirs = [d for d in os.listdir(dataset_path) if os.path.isdir(os.path.join(dataset_path, d))]
     if len(subdirs) > 1:
+        print("Using multi directory dataset!")
         train_dataset = MultiDirLazyDataset(root_dir=dataset_path, split='train', test_ratio=0.1)
         test_dataset = MultiDirLazyDataset(root_dir=dataset_path, split='test', test_ratio=0.1)
         print(f"Training samples: {len(train_dataset)}")
         print(f"Testing samples: {len(test_dataset)}")
     else:
+        print("Using single directory dataset!")
         train_dataset = LazyDataset(dataset_path, split='train', test_batches=test_batches)
         test_dataset = LazyDataset(dataset_path, split='test', test_batches=test_batches)
         print(f"training dataset {len(train_dataset)} samples")

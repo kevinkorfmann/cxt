@@ -61,44 +61,48 @@ def sampling_populations(demography):
     return [pop for pop in demography.populations if pop.allow_samples]
 
 
-def simulate_random_human_segment(
-    seed, num_samples=25, segment_length=1e6, last_chromosome=22, species_name="HomSap", genetic_map=None,
+def is_numeric(item):
+    return item.isdigit() or (item.replace('.', '', 1).isdigit() and item.count('.') < 2)
+
+def simulate_random_segment(
+    seed, num_samples=25, segment_length=1e6, species_name="HomSap", genetic_map=None,
 ):
     """Simulates a random human genomic segment using stdpopsim and msprime."""
 
-    init_seed = seed
     np.random.seed(seed)
     seed = np.random.randint(1, 2**32)
 
     species = stdpopsim.get_species(species_name)
-    chromosome = species.genome.chromosomes[np.random.randint(0, last_chromosome)]
+    chromosomes = [chrom for chrom in species.genome.chromosomes if is_numeric(chrom.id)]
+    chromosome = species.genome.chromosomes[np.random.randint(0, len(chromosomes))]
     left = np.random.uniform(chromosome.length - segment_length)
     right = left + segment_length
 
-    demography = np.random.choice(species.demographic_models)
+    demographic_models = species.demographic_models
+    if len(demographic_models) > 0:
+        valid_models = [
+            model for model in species.demographic_models 
+            # excluded due to sampling points which are not in the present
+            if model.description not in {
+                'Multi-population model of ancient Eurasia',
+                'Out-of-Africa with archaic admixture into Papuans',
+                'Multi-population model of ancient Europe'
+            }
+        ]
+    else:
+        valid_models = [stdpopsim.PiecewiseConstantSize(np.random.choice([10_000, 20_000, 40_000]))]
 
-    valid_models = [
-    model for model in species.demographic_models 
-    if model.description not in {
-        'Multi-population model of ancient Eurasia',
-        'Out-of-Africa with archaic admixture into Papuans',
-        'Multi-population model of ancient Europe'
-    }
-]
-    #while demography.description == 'Multi-population model of ancient Eurasia' or demography.description == 'Out-of-Africa with archaic admixture into Papuans' or demography.description == 'Multi-population model of ancient Europe':
+
     demography = np.random.choice(valid_models)
-
-    
     populations = sampling_populations(demography)
     samples = random_sample_counts(populations, num_samples=num_samples, seed=seed)
-
-
-
+    
     if genetic_map is not None:
         whole_contig = species.get_contig(
-            chromosome.synonyms[0], mutation_rate=demography.mutation_rate, genetic_map=genetic_map
+            chromosome.id, mutation_rate=demography.mutation_rate, genetic_map=genetic_map
         )
         
+        # valid genetic map region sampling
         while True:
             left = np.random.uniform(0, chromosome.length - segment_length)
             right = left + segment_length
@@ -107,7 +111,7 @@ def simulate_random_human_segment(
             if not left_mask.any() or not right_mask.any():
                 continue  
             contig = species.get_contig(
-                chromosome.synonyms[0], left=left, right=right, 
+                chromosome.id, left=left, right=right, 
                 mutation_rate=demography.mutation_rate, genetic_map=genetic_map)
             if not np.isnan(contig.recombination_map.rate).any():
                 break  
@@ -116,11 +120,12 @@ def simulate_random_human_segment(
         ts = engine.simulate(demography, contig, samples, seed=seed)
 
     else:
+        engine = stdpopsim.get_engine("msprime")
         contig = species.get_contig(
-            chromosome.synonyms[0], left=left, right=right, 
+            #chromosome.synonyms[0], left=left, right=right, 
+            chromosome.id, left=left, right=right, 
             mutation_rate=demography.mutation_rate
         )
-        engine = stdpopsim.get_engine("msprime")
         ts = engine.simulate(demography, contig, samples, seed=seed)
 
     return ts
@@ -230,12 +235,11 @@ if __name__ == '__main__':
     parser.add_argument('--start_batch', type=int, default=0, help='Starting batch index')
     parser.add_argument('--pivot_A', type=int, default=0, help='Pivot A index')
     parser.add_argument('--pivot_B', type=int, default=1, help='Pivot B index')
-    parser.add_argument('--data_dir', type=str, default='/sietch_colab/kkor/tiny_batches_base_dataset', help='Directory to save data')
+    parser.add_argument('--data_dir', type=str, default='/sietch_colab/kkor/base_dataset', help='Directory to save data')
     parser.add_argument('--scenario', type=str, choices=[
-        'constant', 'sawtooth','stdpopsim_nogeneticmap','stdpopsim_geneticmap', 'island','llm_ne_constant','llm_ne_sawtooth','llm_island_3pop','llm_island_5pop','llm_hard_sweeps'
+        'constant', 'sawtooth','stdpopsim_homsap', 'stdpopsim_homsap_map', 'stdpopsim_bostau', 'stdpopsim_canfam', 'stdpopsim_canfam_map', 'stdpopsim_pantro', 'stdpopsim_papanu', 'stdpopsim_papanu_map', 'stdpopsim_ponabe', 'stdpopsim_ponabe_map', 'island','llm_ne_constant','llm_ne_sawtooth','llm_island_3pop','llm_island_5pop','llm_hard_sweeps'
     ], default='constant', help='Scenario type')
     parser.add_argument('--randomize_pivots', default=False, help='Randomize pivot indices')
-    parser.add_argument('--genetic_map', type=str, default=None, help='Genetic map, e.g. HapMapII_GRCh38')
     args = parser.parse_args()
 
     num_processes = args.num_processes
@@ -247,7 +251,6 @@ if __name__ == '__main__':
     data_dir = args.data_dir
     scenario = args.scenario
     randomize_pivots = args.randomize_pivots
-    genetic_map = args.genetic_map
 
 
     if scenario == "constant":
@@ -263,14 +266,55 @@ if __name__ == '__main__':
         simulate_parameterized_tree_sequence_island = partial(simulate_parameterized_tree_sequence, island_demography=island_demography, samples=samples)
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence_island, randomize_pivots)
 
-    elif scenario == "stdpopsim_nogeneticmap":
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_random_human_segment, randomize_pivots)
 
-    elif scenario == "stdpopsim_geneticmap":
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_human_segment, genetic_map=genetic_map), randomize_pivots)
+    elif scenario == "stdpopsim_homsap":
+        species_name = "HomSap"
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+
+    elif scenario == "stdpopsim_homsap_map":
+        species_name = "HomSap"
+        genetic_map = 'HapMapII_GRCh38'
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+
+    elif scenario == "stdpopsim_bostau":
+        species_name = "BosTau"
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+
+    elif scenario == "stdpopsim_canfam":
+        species_name = "CanFam"
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+
+    elif scenario == "stdpopsim_canfam_map":
+        species_name = "CanFam"
+        genetic_map = 'Campbell2016_CanFam3_1'
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+
+    elif scenario == "stdpopsim_pantro":
+        species_name = "PanTro"
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+
+    elif scenario == "stdpopsim_papanu":
+        species_name = "PapAnu"
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+
+    elif scenario == "stdpopsim_papanu_map":
+        species_name = "PapAnu"
+        genetic_map = 'Pyrho_PAnubis1_0'
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+
+    elif scenario == "stdpopsim_ponabe":
+        species_name = "PonAbe"
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+
+    elif scenario == "stdpopsim_ponabe_map":
+        species_name = "PonAbe"
+        genetic_map = 'NaterPA_PonAbe3'
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+
+
 
     elif scenario == "llm_ne_constant":
-        for population_size in [8e4]: # 1e4, 2e4, 4e4, 8e4
+        for population_size in [1e4, 2e4, 4e4]: # 1e4, 2e4, 4e4, 8e4
             for mutation_rate in [1e-8, 5e-8]:
                 for recombination_rate in [1e-8, 5e-8]:
                     if mutation_rate == 5e-8 and recombination_rate == 5e-8:
@@ -294,8 +338,8 @@ if __name__ == '__main__':
                         process_batches(num_samples, start_batch, batch_size, num_processes, save_dir, pivot_A, pivot_B, sim_func, randomize_pivots)
 
     elif scenario == "llm_island_3pop":
-        for migration_rate in [0.2]: # 0.05, 0.2
-            for population_size in [2e4, 4e4]: # 1e4, 2e4, 4e4
+        for migration_rate in [0.05, 0.2]:
+            for population_size in [1e4, 2e4, 4e4]: # 1e4, 2e4, 4e4
                 for mutation_rate in [1e-8, 5e-8]:
                     for recombination_rate in [1e-8, 5e-8]:
                         if mutation_rate == 5e-8 and recombination_rate == 5e-8:
@@ -307,6 +351,8 @@ if __name__ == '__main__':
                         save_dir = f"{data_dir}/{sub_data_dir}"
                         process_batches(num_samples, start_batch, batch_size, num_processes, save_dir, pivot_A, pivot_B, sim_func, randomize_pivots)
 
+    
+    # not this one, takes too long
     elif scenario == "llm_island_5pop":
         for migration_rate in [0.05, 0.2]:
             for population_size in [1e4, 2e4, 4e4]:
@@ -320,6 +366,7 @@ if __name__ == '__main__':
                         sub_data_dir = f"island_5pop_{migration_rate}_{population_size:.0e}_{mutation_rate:.1e}_{recombination_rate:.1e}"
                         save_dir = f"{data_dir}/{sub_data_dir}"
                         process_batches(num_samples, start_batch, batch_size, num_processes, save_dir, pivot_A, pivot_B, sim_func, randomize_pivots)
+    
 
     elif scenario == "llm_hard_sweeps":
         np.random.seed(42)
