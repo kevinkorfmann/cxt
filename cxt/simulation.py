@@ -267,6 +267,8 @@ if __name__ == '__main__':
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence_island, randomize_pivots)
 
 
+
+    # mammals
     elif scenario == "stdpopsim_homsap":
         species_name = "HomSap"
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
@@ -304,15 +306,30 @@ if __name__ == '__main__':
 
     elif scenario == "stdpopsim_ponabe":
         species_name = "PonAbe"
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name), randomize_pivots)
 
     elif scenario == "stdpopsim_ponabe_map":
         species_name = "PonAbe"
         genetic_map = 'NaterPA_PonAbe3'
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+    
+    # rest of stdpopsim scenarios
+    elif scenario == "stdpopsim_ponabe":
+        species_name = "PonAbe"
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+
+    elif scenario == "stdpopsim_ponabe_map":
+        species_name = "PonAbe"
+        genetic_map = 'NaterPA_PonAbe3'
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+    
 
 
-
+    # broad dataset v0
     elif scenario == "llm_ne_constant":
         for population_size in [1e4, 2e4, 4e4]: # 1e4, 2e4, 4e4, 8e4
             for mutation_rate in [1e-8, 5e-8]:
