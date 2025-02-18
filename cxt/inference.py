@@ -50,7 +50,7 @@ def generate_causal_mask(seq_len, full_attention_n=None, device="cpu"):
 #    mask = torch.tril(torch.ones((seq_len, seq_len), device=device)).bool()
 #    return mask.unsqueeze(0).unsqueeze(0)  # [1, 1, T, T]
 
-def generate(model, src, B=20, device="cuda", clear_cache=True):
+def generate(model, src, B=20, device="cuda", clear_cache=True, use_ddp=False):
     #attn_mask = generate_causal_mask(1001, device=device)
     attn_mask = generate_causal_mask(1001, full_attention_n=501, device=device)
     attn_mask = attn_mask.repeat(B, 1, 1, 1)
@@ -71,7 +71,8 @@ def generate(model, src, B=20, device="cuda", clear_cache=True):
                 next_token = torch.multinomial(probs, num_samples=1)
                 idx = torch.cat([idx, next_token], dim=1)
         
-    if clear_cache: model.clear_cache()
+    if use_ddp and clear_cache: model.module.clear_cache()
+    elif clear_cache: model.clear_cache()
     return idx
 
 def load_model(config, model_path=None, device='cuda'):
@@ -109,6 +110,41 @@ def prepare_ts_data(ts: object, num_samples: int, B: int, device='cuda', num_pro
     tgt = torch.stack(tgt_list, dim=0) 
     src = src.to(device).to(torch.float32)
     return src, tgt
+
+def prepare_tss_data(ts_list: list, num_samples: int, B: int, device='cuda', num_processes=50) -> tuple:
+    """
+    Prepares the data for the model by processing pairs of samples from multiple tree sequences.
+
+    Parameters:
+    - ts_list: A list of tree sequence objects.
+    - num_samples: The number of samples to generate.
+    - B: The batch size.
+    - device: The computing device ('cuda' or 'cpu').
+    - num_processes: Number of parallel processes to use.
+
+    Returns:
+    - src: Tensor containing the source data.
+    - tgt: Tensor containing the target data.
+    """
+    args = []
+    for ts in ts_list:
+        args.extend([(ts, a, b) for a, b in combinations(range(num_samples), 2)])
+
+    with Pool(num_processes) as pool: 
+        results = list(tqdm(pool.imap(process_pair, args), total=B * len(ts_list)))
+
+    src_list, tgt_list = zip(*results)
+    src_list = totensorlist(src_list)
+    tgt_list = totensorlist(tgt_list)
+
+    src = torch.stack(src_list, dim=0)
+    tgt = torch.stack(tgt_list, dim=0)
+
+    src = src.to(device).to(torch.float32)
+    tgt = tgt.to(device).to(torch.float32)
+
+    return src, tgt
+
 
 def translate_from_ts(
         ts,
