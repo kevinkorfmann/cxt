@@ -57,15 +57,29 @@ def random_sample_counts(
     return sampled_counts
 
 
-def sampling_populations(demography):
-    return [pop for pop in demography.populations if pop.allow_samples]
+#def sampling_populations(demography):
+#    return [pop for pop in demography.populations if pop.allow_samples]
+
+def sampling_populations(model):
+    populations = []
+    for pop in model.populations:
+        if hasattr(pop, 'default_sampling_time'):
+            if isinstance(pop.default_sampling_time, float):
+                if pop.default_sampling_time > 0:
+                    pass
+            elif pop.allow_samples:
+                populations.append(pop)
+    return populations
 
 
-def is_numeric(item):
-    return item.isdigit() or (item.replace('.', '', 1).isdigit() and item.count('.') < 2)
+def is_any_numeric_or_roman_numeral(item):
+    # includes C. elegans chromosomes
+    for char in item:
+        if char.isdigit() or char in ['I', 'II', 'III', 'IV', 'V', 'X']:
+            return True
 
 def simulate_random_segment(
-    seed, num_samples=25, segment_length=1e6, species_name="HomSap", genetic_map=None,
+    seed, num_samples=25, segment_length=1e6, species_name="HomSap", genetic_map=None, population_size=None
 ):
     """Simulates a random human genomic segment using stdpopsim and msprime."""
 
@@ -73,7 +87,7 @@ def simulate_random_segment(
     seed = np.random.randint(1, 2**32)
 
     species = stdpopsim.get_species(species_name)
-    chromosomes = [chrom for chrom in species.genome.chromosomes if is_numeric(chrom.id)]
+    chromosomes = [chrom for chrom in species.genome.chromosomes if is_any_numeric_or_roman_numeral(chrom.id)]
     chromosome = species.genome.chromosomes[np.random.randint(0, len(chromosomes))]
     left = np.random.uniform(chromosome.length - segment_length)
     right = left + segment_length
@@ -90,7 +104,10 @@ def simulate_random_segment(
             }
         ]
     else:
-        valid_models = [stdpopsim.PiecewiseConstantSize(np.random.choice([10_000, 20_000, 40_000]))]
+        if population_size is None:
+            valid_models = [stdpopsim.PiecewiseConstantSize(np.random.choice([10_000, 20_000, 40_000]))]
+        else:
+            valid_models = [stdpopsim.PiecewiseConstantSize(population_size)]
 
 
     demography = np.random.choice(valid_models)
@@ -237,7 +254,13 @@ if __name__ == '__main__':
     parser.add_argument('--pivot_B', type=int, default=1, help='Pivot B index')
     parser.add_argument('--data_dir', type=str, default='/sietch_colab/kkor/base_dataset', help='Directory to save data')
     parser.add_argument('--scenario', type=str, choices=[
-        'constant', 'sawtooth','stdpopsim_homsap', 'stdpopsim_homsap_map', 'stdpopsim_bostau', 'stdpopsim_canfam', 'stdpopsim_canfam_map', 'stdpopsim_pantro', 'stdpopsim_papanu', 'stdpopsim_papanu_map', 'stdpopsim_ponabe', 'stdpopsim_ponabe_map', 'island','llm_ne_constant','llm_ne_sawtooth','llm_island_3pop','llm_island_5pop','llm_hard_sweeps'
+        'constant', 'sawtooth','stdpopsim_homsap', 'stdpopsim_homsap_map',
+          'stdpopsim_bostau', 'stdpopsim_canfam', 'stdpopsim_canfam_map', 'stdpopsim_pantro',
+            'stdpopsim_papanu', 'stdpopsim_papanu_map', 'stdpopsim_ponabe', 'stdpopsim_ponabe_map','stdpopsim_aedaeg',
+            'stdpopsim_anapla', 'stdpopsim_anocar','stdpopsim_anogam', 'stdpopsim_apimel', 'stdpopsim_aratha', 'stdpopsim_aratha_map',
+            'stdpopsim_caeele', 'stdpopsim_caeele_map', 'stdpopsim_dromel', 'stdpopsim_dromel_map', 'stdpopsim_drosec',
+            'stdpopsim_gasacu', 'stdpopsim_helann', 'stdpopsim_helmel'
+              'island','llm_ne_constant','llm_ne_sawtooth','llm_island_3pop','llm_island_5pop','llm_hard_sweeps'
     ], default='constant', help='Scenario type')
     parser.add_argument('--randomize_pivots', default=False, help='Randomize pivot indices')
     args = parser.parse_args()
@@ -271,38 +294,48 @@ if __name__ == '__main__':
     # mammals
     elif scenario == "stdpopsim_homsap":
         species_name = "HomSap"
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name), randomize_pivots)
 
     elif scenario == "stdpopsim_homsap_map":
         species_name = "HomSap"
         genetic_map = 'HapMapII_GRCh38'
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
 
     elif scenario == "stdpopsim_bostau":
         species_name = "BosTau"
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name), randomize_pivots)
 
     elif scenario == "stdpopsim_canfam":
         species_name = "CanFam"
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+        population_size = 13000
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, population_size=population_size), randomize_pivots)
 
     elif scenario == "stdpopsim_canfam_map":
         species_name = "CanFam"
+        population_size = 13000
         genetic_map = 'Campbell2016_CanFam3_1'
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map, population_size=population_size), randomize_pivots)
 
     elif scenario == "stdpopsim_pantro":
         species_name = "PanTro"
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name), randomize_pivots)
 
     elif scenario == "stdpopsim_papanu":
         species_name = "PapAnu"
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name), randomize_pivots)
 
     elif scenario == "stdpopsim_papanu_map":
         species_name = "PapAnu"
         genetic_map = 'Pyrho_PAnubis1_0'
-        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
 
     elif scenario == "stdpopsim_ponabe":
         species_name = "PonAbe"
@@ -316,17 +349,95 @@ if __name__ == '__main__':
                          partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
     
     # rest of stdpopsim scenarios
-    elif scenario == "stdpopsim_ponabe":
-        species_name = "PonAbe"
+    elif scenario == "stdpopsim_aedaeg":
+        species_name = "AedAeg"
+        population_size = 1_000_000
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, population_size=population_size), randomize_pivots)
+
+
+    elif scenario == "stdpopsim_anapla":
+        species_name = "AnaPla"
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                            partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+
+    elif scenario == "stdpopsim_anocar":
+        species_name = "AnoCar"
+        population_size = 3_050_000
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, population_size=population_size), randomize_pivots)
+
+    elif scenario == "stdpopsim_anogam":
+        species_name = "AnoGam"
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                            partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+    
+    elif scenario == "stdpopsim_apimel":
+        species_name = "ApiMel"
+        population_size = 200_000
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, population_size=population_size), randomize_pivots)
+
+    elif scenario == "stdpopsim_aratha":
+        species_name = "AraTha"
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
                          partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+        
+    elif scenario == "stdpopsim_aratha_map":
+        species_name = "AraTha"
+        genetic_map = 'SalomeAveraged_TAIR10'
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                            partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
+        
+    elif scenario == "stdpopsim_caeele":
+        species_name = "CaeEle"
+        population_size = 10000
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, population_size=population_size), randomize_pivots)
 
-    elif scenario == "stdpopsim_ponabe_map":
-        species_name = "PonAbe"
-        genetic_map = 'NaterPA_PonAbe3'
+    elif scenario == "stdpopsim_caeele_map":
+        species_name = "CaeEle"
+        population_size = 10000
+        genetic_map = 'RockmanRIAIL_ce11'
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, population_size=population_size, genetic_map=genetic_map), randomize_pivots)
+
+    elif scenario == "stdpopsim_dromel":
+        species_name = "DroMel"
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name), randomize_pivots)
+        
+    elif scenario == "stdpopsim_dromel_map":
+        species_name = "DroMel"
+        genetic_map = 'ComeronCrossoverV2_dm6'
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
                          partial(simulate_random_segment, species_name=species_name, genetic_map=genetic_map), randomize_pivots)
-    
+        
+    elif scenario == "stdpopsim_drosec":
+        species_name = "DroSec"
+        population_size = 100000
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, population_size=population_size), randomize_pivots)
+
+    elif scenario == "stdpopsim_gasacu":
+        species_name = "GasAcu"
+        population_size = 10000
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, population_size=population_size), randomize_pivots)
+
+    elif scenario == "stdpopsim_helann":
+        species_name = "HelAnn"
+        population_size = 673_968
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, population_size=population_size), randomize_pivots)
+
+
+    elif scenario == "stdpopsim_helmel":
+        species_name = "HelMel"
+        population_size = 2_111_109
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B,
+                         partial(simulate_random_segment, species_name=species_name, population_size=population_size), randomize_pivots)
+
 
 
     # broad dataset v0

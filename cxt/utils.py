@@ -15,6 +15,30 @@ def discretize(sequence, population_time):
     indices = np.clip(indices, 0, len(population_time) - 1)
     return indices.tolist()
 
+def sample_population_size(n_min:int=10, n_max:int=100_000, num_time_windows=20) -> list[float]:
+    n_min_log = np.log(n_min)
+    n_max_log = np.log(n_max)
+    population_size = [np.random.uniform(low=n_min_log, high=n_max_log)] 
+    for j in range(num_time_windows-1):
+        next_population_size = population_size[-1] * np.random.uniform(0.5, 1.5)
+        while next_population_size > n_max_log or next_population_size  < n_min_log:
+            next_population_size = population_size[-1] * np.random.uniform(0.5, 1.5)
+        population_size.append(next_population_size)
+
+    population_size = np.convolve(population_size, np.ones(3)/3, mode='same')
+    population_size[0] = population_size[1]
+    population_size[-1] = population_size[-2]
+    return population_size
+
+def sample_demography(n_min=10_000, n_max=200_000, num_time_windows=20):
+    time_steps = np.linspace(3, 14, num_time_windows)
+    population_size = sample_population_size(n_min, n_max, num_time_windows)
+    demography=msprime.Demography()
+    demography.add_population(initial_size=(population_size[0]))
+    for i, (time, size) in enumerate(zip(time_steps, population_size)):
+        demography.add_population_parameters_change(time=time, initial_size=size)
+    return demography
+
 
 
 def simulate_parameterized_tree_sequence(
@@ -28,13 +52,14 @@ def simulate_parameterized_tree_sequence(
         demography=None,
         island_demography=None, #msprime.Demography.island_model([10000, 5000, 5000], migration_rate=0.1)
         hard_sweep=None,
+        random_scenario=None,
         selection_coefficient=None,
         selection_position=0.5e6
         ):
     np.random.seed(seed)
     SEED = np.random.uniform(1, 2**32 - 1)
 
-    assert sum(x is not None for x in [demography, island_demography, hard_sweep]) in [0, 1]
+    assert sum(x is not None for x in [demography, island_demography, hard_sweep, random_scenario]) in [0, 1]
 
     if demography:
         ts = msprime.sim_ancestry(
@@ -42,6 +67,17 @@ def simulate_parameterized_tree_sequence(
             demography=demography,
             sequence_length=sequence_length,
             recombination_rate=recombination_rate, ploidy=ploidy, random_seed=SEED)
+        
+    elif random_scenario:
+        mutation_rate = np.random.uniform(1e-9, 1e-8)
+        recombination_rate = np.random.uniform(1e-9, 1e-8)
+        demography = sample_demography(n_min=10_000, n_max=200_000, num_time_windows=20)
+        ts = msprime.sim_ancestry(
+            samples=samples, 
+            demography=demography,
+            sequence_length=sequence_length,
+            recombination_rate=recombination_rate, ploidy=ploidy, random_seed=SEED)
+
     elif island_demography:
         ts = msprime.sim_ancestry(
             samples=samples, # {0: 15, 1: 5, 2: 5}
@@ -200,7 +236,10 @@ def generate_causal_mask(seq_len, full_attention_n=None, device="cpu"):
 
 
 
-TIMES = np.linspace(3, 14, 256)
+#TIMES = np.linspace(3, 14, 256)
+TIMES = np.linspace(3, 17, 324)
+
+
 
 def create_sawtooth_demogaphy_object(Ne = 2*10**4, magnitue=4):
     demography = msprime.Demography()
