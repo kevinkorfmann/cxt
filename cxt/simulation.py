@@ -76,7 +76,11 @@ def is_any_numeric_or_roman_numeral(item):
     # includes C. elegans chromosomes
     for char in item:
         if char.isdigit() or char in ['I', 'II', 'III', 'IV', 'V', 'X']:
-            return True
+            if char == 'CM009947.2':
+                return False
+            else: return True
+    return False
+                
 
 def simulate_random_segment(
     seed, num_samples=25, segment_length=1e6, species_name="HomSap", genetic_map=None, population_size=None
@@ -259,8 +263,8 @@ if __name__ == '__main__':
             'stdpopsim_papanu', 'stdpopsim_papanu_map', 'stdpopsim_ponabe', 'stdpopsim_ponabe_map','stdpopsim_aedaeg',
             'stdpopsim_anapla', 'stdpopsim_anocar','stdpopsim_anogam', 'stdpopsim_apimel', 'stdpopsim_aratha', 'stdpopsim_aratha_map',
             'stdpopsim_caeele', 'stdpopsim_caeele_map', 'stdpopsim_dromel', 'stdpopsim_dromel_map', 'stdpopsim_drosec',
-            'stdpopsim_gasacu', 'stdpopsim_helann', 'stdpopsim_helmel'
-              'island','llm_ne_constant','llm_ne_sawtooth','llm_island_3pop','llm_island_5pop','llm_hard_sweeps'
+            'stdpopsim_gasacu', 'stdpopsim_helann', 'stdpopsim_helmel',
+              'island','llm_ne_constant','llm_ne_sawtooth','llm_island_3pop','llm_island_5pop','llm_hard_sweeps','random'
     ], default='constant', help='Scenario type')
     parser.add_argument('--randomize_pivots', default=False, help='Randomize pivot indices')
     args = parser.parse_args()
@@ -288,6 +292,10 @@ if __name__ == '__main__':
         island_demography = msprime.Demography.island_model([10000, 5000, 5000], migration_rate=0.1)
         simulate_parameterized_tree_sequence_island = partial(simulate_parameterized_tree_sequence, island_demography=island_demography, samples=samples)
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence_island, randomize_pivots)
+
+    elif scenario == "random":
+        simulate_parameterized_tree_sequence_random = partial(simulate_parameterized_tree_sequence, random_scenario=True)
+        process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence_random, randomize_pivots)        
 
 
 
