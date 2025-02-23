@@ -5,6 +5,10 @@ from scipy.interpolate import interp1d
 import numpy as np
 import torch
 
+#TIMES = np.linspace(3, 14, 256)
+TIMES = np.linspace(3, 17, 324)
+
+
 retrieve_site_positions = lambda ts: np.array([site.position for site in ts.sites()])
 xor = lambda a, b: (a^b).astype(int)
 xnor = lambda a, b: (1 - xor(a, b)).astype(int)
@@ -15,30 +19,70 @@ def discretize(sequence, population_time):
     indices = np.clip(indices, 0, len(population_time) - 1)
     return indices.tolist()
 
-def sample_population_size(n_min:int=10, n_max:int=100_000, num_time_windows=20) -> list[float]:
+def sample_population_size(n_min: int = 10, n_max: int = 100_000, num_time_windows: int = 20, seed: int = None) -> list[float]:
+    rng = np.random.default_rng(seed)  # Use a local random generator
     n_min_log = np.log(n_min)
     n_max_log = np.log(n_max)
-    population_size = [np.random.uniform(low=n_min_log, high=n_max_log)] 
-    for j in range(num_time_windows-1):
-        next_population_size = population_size[-1] * np.random.uniform(0.5, 1.5)
-        while next_population_size > n_max_log or next_population_size  < n_min_log:
-            next_population_size = population_size[-1] * np.random.uniform(0.5, 1.5)
+    population_size = [rng.uniform(low=n_min_log, high=n_max_log)]
+    
+    for _ in range(num_time_windows - 1):
+        next_population_size = population_size[-1] * rng.uniform(0.5, 1.5)
+        while not (n_min_log <= next_population_size <= n_max_log):
+            next_population_size = population_size[-1] * rng.uniform(0.5, 1.5)
         population_size.append(next_population_size)
-
-    population_size = np.convolve(population_size, np.ones(3)/3, mode='same')
+    
+    # Smooth the trajectory using a moving average
+    population_size = np.convolve(population_size, np.ones(3) / 3, mode="same")
     population_size[0] = population_size[1]
     population_size[-1] = population_size[-2]
-    return population_size
+    return np.exp(population_size).tolist()  
 
-def sample_demography(n_min=10_000, n_max=200_000, num_time_windows=20):
+def sample_demography(n_min=10_000, n_max=200_000, num_time_windows=20, seed=None):
     time_steps = np.linspace(3, 14, num_time_windows)
-    population_size = sample_population_size(n_min, n_max, num_time_windows)
+    population_size = sample_population_size(n_min, n_max, num_time_windows, seed=seed)
     demography=msprime.Demography()
     demography.add_population(initial_size=(population_size[0]))
     for i, (time, size) in enumerate(zip(time_steps, population_size)):
         demography.add_population_parameters_change(time=time, initial_size=size)
     return demography
 
+
+
+class DemographyStorage:
+    def __init__(self, mutation_rate_range=(1e-9, 1e-8), recombination_rate_range=(1e-9, 1e-8)):
+        self.mutation_rate_range = mutation_rate_range
+        self.recombination_rate_range = recombination_rate_range
+        
+        self.demography_seeds  = [
+            0x8534AA, 0x4BAA50, 0xC47D25, 0x835F0D, 0x28CEC5, 0x29C8FB, 0xEC5342, 0xDF16F4,
+            0x6BB979, 0x72645C, 0x5A0518, 0xA2DB99, 0xB08ED9, 0xC6464C, 0x2259B4, 0xAEE45A,
+            0x907817, 0x6271C5, 0xF61BBE, 0xD4E56A, 0x451CA4, 0xFEFF41, 0x994C38, 0xFC971C,
+            0x7EA959, 0xB893CD, 0x7623E6, 0x725A75, 0x8DFBFF, 0xD50EDE, 0x8097F1, 0xECB91F,
+            0xBB2A96, 0x221B88, 0x2EC6F3, 0x5CF515, 0x634F11, 0xAB689E, 0x711F54, 0xD16D4D,
+            0x5F846E, 0xAF8922, 0x1C016C, 0xEA592C, 0x72D1FE, 0xF6389F, 0xCBD018, 0x59E61C,
+            0x24D3EF, 0x944E92, 0x1E9A5E, 0x88C3A4, 0x61860D, 0xC27EA8, 0x568673, 0xD4B5A0,
+            0xE32F8D, 0xA4E4A3, 0x83ECD2, 0xC5A2D9, 0xCE4F5C, 0x34DEA3, 0x5E33B3, 0x589D1B
+        ]
+        self.combinations = self._generate_combinations()
+    
+    def _generate_combinations(self, local_seed=0x8534AA):
+        combinations = []
+        rng = np.random.default_rng(local_seed)
+        mutation_rates = rng.uniform(*self.mutation_rate_range, size=len(self.demography_seeds))
+        recombination_rates = rng.uniform(*self.recombination_rate_range, size=len(self.demography_seeds))
+        for i, demography_seed in enumerate(self.demography_seeds):
+            mutation_rate = mutation_rates[i]
+            recombination_rate = recombination_rates[i]
+            demography = sample_demography(seed=demography_seed)
+            combinations.append((mutation_rate, recombination_rate, demography))
+        return combinations
+
+    
+    def get_combinations(self):
+        return self.combinations
+    
+
+storage = DemographyStorage()
 
 
 def simulate_parameterized_tree_sequence(
@@ -69,9 +113,10 @@ def simulate_parameterized_tree_sequence(
             recombination_rate=recombination_rate, ploidy=ploidy, random_seed=SEED)
         
     elif random_scenario:
-        mutation_rate = np.random.uniform(1e-9, 1e-8)
-        recombination_rate = np.random.uniform(1e-9, 1e-8)
-        demography = sample_demography(n_min=10_000, n_max=200_000, num_time_windows=20)
+        # [1, ... ,65]
+        assert random_scenario-1 < len(storage.demography_seeds), "Invalid random scenario index"
+        random_scenario -= 1
+        mutation_rate, recombination_rate, demography = storage.get_combinations()[random_scenario]
         ts = msprime.sim_ancestry(
             samples=samples, 
             demography=demography,
@@ -208,7 +253,8 @@ def ts2input(ts, pivot_A, pivot_B):
     tgt = np.log(interpolate_tmrcas(ts.simplify(samples=[pivot_A, pivot_B]), window_size=2000)).astype(np.float16)
     src = torch.from_numpy(src).float()
     src = torch.log1p(src)
-    tgt = np.array(discretize(tgt, np.linspace(3, 14, 256)))
+    #tgt = np.array(discretize(tgt, np.linspace(3, 14, 256)))
+    tgt = np.array(discretize(tgt, TIMES))
     tgt = torch.from_numpy(tgt).long() + 2
     tgt = torch.cat([torch.tensor([1]), tgt])
     return src, tgt
@@ -219,7 +265,8 @@ def ts2input_numpy(ts, pivot_A, pivot_B):
     src = np.stack([Xxor, Xxnor], axis=0).astype(np.float16)
     tgt = np.log(interpolate_tmrcas(ts.simplify(samples=[pivot_A, pivot_B]), window_size=2000)).astype(np.float16)
     src = np.log1p(src)  # Log transformation
-    tgt = np.array(discretize(tgt, np.linspace(3, 14, 256)))
+    #tgt = np.array(discretize(tgt, np.linspace(3, 14, 256)))
+    tgt = np.array(discretize(tgt, TIMES))
     tgt = np.concatenate([[1], tgt + 2])  # Add special token and shift indices
     return src, tgt
 
@@ -236,8 +283,6 @@ def generate_causal_mask(seq_len, full_attention_n=None, device="cpu"):
 
 
 
-#TIMES = np.linspace(3, 14, 256)
-TIMES = np.linspace(3, 17, 324)
 
 
 

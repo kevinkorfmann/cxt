@@ -1,6 +1,6 @@
 python simulation.py \
     --num_processes 100 \
-    --num_samples 500_000 \
+    --num_samples 3_200_000 \
     --batch_size 1000 \
     --start_batch 0 \
     --pivot_A 0 \

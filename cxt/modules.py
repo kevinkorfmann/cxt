@@ -100,8 +100,9 @@ class CausalSelfAttention(nn.Module):
         # KV Cache
         #self.cache_k = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size), dtype=torch.bfloat16).to(config.device)
         #self.cache_v = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size), dtype=torch.bfloat16).to(config.device)
-        self.cache_k = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size)).to(config.device)
-        self.cache_v = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size)).to(config.device)
+
+        self.cache_k = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size), requires_grad=False).to(config.device)
+        self.cache_v = torch.zeros((config.batch_size, self.n_head, 1001, self.head_size), requires_grad=False).to(config.device)
 
 
     def forward(self, x, attn_mask, position=None, use_cache=False):

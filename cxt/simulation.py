@@ -294,7 +294,8 @@ if __name__ == '__main__':
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence_island, randomize_pivots)
 
     elif scenario == "random":
-        simulate_parameterized_tree_sequence_random = partial(simulate_parameterized_tree_sequence, random_scenario=True)
+        random_scenario = np.random.choice(np.arange(1, 66))
+        simulate_parameterized_tree_sequence_random = partial(simulate_parameterized_tree_sequence, random_scenario=random_scenario)
         process_batches(num_samples, start_batch, batch_size, num_processes, data_dir, pivot_A, pivot_B, simulate_parameterized_tree_sequence_random, randomize_pivots)        
 
 
