@@ -7,4 +7,4 @@ This package proposes a new method of inferring pairwise coalescent times using 
 </p>
 
 
-Checkout the readthedocs for plenty of examples for training, inference and comparisons with other tools.
+Checkout the readthedocs for plenty of examples for training, inference and comparisons with other tools.# cxcld
