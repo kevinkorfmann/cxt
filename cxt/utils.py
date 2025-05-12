@@ -171,9 +171,10 @@ def calculate_window_sfs_vectorized(site_positions, pivot_frequencies, window_si
 
 
 w_multipliers = np.array([2, 8, 32, 64])
-def ts2X_vectorized(ts, window_size=4000, step_size=2000, xor_ops=xor, pivot_A=0, pivot_B=1):
+def ts2X_vectorized(ts, window_size=4000, step_size=2000, xor_ops=xor, pivot_A=0, pivot_B=1, offset=0):
     """Memory-efficient conversion of tree sequence to feature matrix"""
     site_positions = retrieve_site_positions(ts)
+    site_positions -= offset
     gm = ts.genotype_matrix().T
 
     mask = np.logical_or(np.any(gm >= 2, axis=0), gm.sum(0) >= ts.num_samples)
@@ -183,7 +184,7 @@ def ts2X_vectorized(ts, window_size=4000, step_size=2000, xor_ops=xor, pivot_A=0
     num_samples = gm.shape[0]
     
     frequencies = gm.sum(0)
-    sequence_length = ts.sequence_length
+    sequence_length = 1e6#ts.sequence_length
     
     # Calculate xor product
     xor_freqs = frequencies * xor_ops(gm[pivot_A], gm[pivot_B])
@@ -236,10 +237,11 @@ def interpolate_tmrcas(ts: tskit.TreeSequence, window_size: int) -> np.ndarray:
     tmrca_landscape = [extract_tmrca_data(tree) for tree in ts.trees()]
     tmrca_array = np.array(tmrca_landscape)
 
+    sequence_length = 1e6
     y_tmrca_interpolated = interpolate_tmrca_per_window(
         position=tmrca_array[:, 0],
         tmrca=tmrca_array[:, 3],
-        interval_end=int(ts.sequence_length) + window_size,
+        interval_end=int(sequence_length) + window_size,
         interval_size=window_size
     )
     return y_tmrca_interpolated
@@ -259,15 +261,19 @@ def ts2input(ts, pivot_A, pivot_B):
     tgt = torch.cat([torch.tensor([1]), tgt])
     return src, tgt
 
-def ts2input_numpy(ts, pivot_A, pivot_B):
-    Xxor = ts2X_vectorized(ts, window_size=2000, xor_ops=xor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
-    Xxnor = ts2X_vectorized(ts, window_size=2000, xor_ops=xnor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
+def ts2input_numpy(ts, pivot_A, pivot_B, offset=0, ignore_target=False):
+    Xxor = ts2X_vectorized(ts, window_size=2000, xor_ops=xor, pivot_A=pivot_A, pivot_B=pivot_B, offset=offset).astype(np.float16)
+    Xxnor = ts2X_vectorized(ts, window_size=2000, xor_ops=xnor, pivot_A=pivot_A, pivot_B=pivot_B, offset=offset).astype(np.float16)
     src = np.stack([Xxor, Xxnor], axis=0).astype(np.float16)
-    tgt = np.log(interpolate_tmrcas(ts.simplify(samples=[pivot_A, pivot_B]), window_size=2000)).astype(np.float16)
+    if not ignore_target:
+        tgt = np.log(interpolate_tmrcas(ts.simplify(samples=[pivot_A, pivot_B]), window_size=2000)).astype(np.float16)
     src = np.log1p(src)  # Log transformation
     #tgt = np.array(discretize(tgt, np.linspace(3, 14, 256)))
-    tgt = np.array(discretize(tgt, TIMES))
-    tgt = np.concatenate([[1], tgt + 2])  # Add special token and shift indices
+    if not ignore_target:
+        tgt = np.array(discretize(tgt, TIMES))
+        tgt = np.concatenate([[1], tgt + 2])  # Add special token and shift indices
+    else:
+        tgt = np.ones(src.shape[1], dtype=int) * 2
     return src, tgt
 
 #def generate_causal_mask(seq_len, device):
@@ -319,8 +325,8 @@ def post_process(tgt, sequence, TIMES):
     return TIMES[yhat], TIMES[ytrue]
 
 def process_pair(args):
-    ts, pivot_A, pivot_B = args
-    return ts2input_numpy(ts, pivot_A, pivot_B)
+    ts, pivot_A, pivot_B, offset, ignore_target = args
+    return ts2input_numpy(ts, pivot_A, pivot_B, offset, ignore_target)
 
 
 def accumulating_mses(yhats, ytrues):

@@ -99,7 +99,7 @@ def simulate_random_segment(
 
     # good enough for now, misses last two chromosomes of rice
     chromosome = species.genome.chromosomes[np.random.randint(0, len(chromosomes))]
-    while chromosome.id in ['Mt', 'Pt']:
+    while chromosome.id in ['Mt', 'Pt', 'X', 'Y']: # added X Y
         chromosome = species.genome.chromosomes[np.random.randint(0, len(chromosomes))]
 
     left = np.random.uniform(chromosome.length - segment_length)
@@ -134,8 +134,10 @@ def simulate_random_segment(
         
         # valid genetic map region sampling
         while True:
+            
             left = np.random.uniform(0, chromosome.length - segment_length)
             right = left + segment_length
+            
             left_mask = whole_contig.recombination_map.left >= left
             right_mask = whole_contig.recombination_map.right < right
             if not left_mask.any() or not right_mask.any():
@@ -143,11 +145,17 @@ def simulate_random_segment(
             contig = species.get_contig(
                 chromosome.id, left=left, right=right, 
                 mutation_rate=demography.mutation_rate, genetic_map=genetic_map)
+            #print(chromosome.id, left, right, contig.recombination_map.rate)
             if not np.isnan(contig.recombination_map.rate).any():
                 break  
 
-        engine = stdpopsim.get_engine("msprime")
-        ts = engine.simulate(demography, contig, samples, seed=seed)
+        ratemap = contig.recombination_map
+        mean_recom_rate = ratemap.mean_rate
+        mean_mutat_rate = demography.mutation_rate
+        if mean_mutat_rate == None:
+            mean_mutat_rate = species.genome.mean_mutation_rate
+
+        
 
     else:
         engine = stdpopsim.get_engine("msprime")
@@ -156,13 +164,17 @@ def simulate_random_segment(
             chromosome.id, left=left, right=right, 
             mutation_rate=demography.mutation_rate
         )
-        ts = engine.simulate(demography, contig, samples, seed=seed).trim()
+        ratemap = contig.recombination_map
+        mean_recom_rate = ratemap.mean_rate
+        mean_mutat_rate = demography.mutation_rate
+        if mean_mutat_rate == None:
+            mean_mutat_rate = species.genome.mean_mutation_rate
 
         
         #ts = rescale_sequence(ts.keep_intervals([[left, right]]).simplify(), left).trim()
         #print(ts.num_trees, ts.num_sites, ts.sequence_length, ts.num_samples)
 
-    return ts
+    return mean_recom_rate, mean_mutat_rate
 
 
 def generate_data(args) -> tuple:
@@ -188,28 +200,13 @@ def generate_data(args) -> tuple:
             A 1D array with log-interpolated TMRCA values.
     """
     i, pivot_A, pivot_B, ts_simulation_func, randomize_pivots = args 
-    ts = ts_simulation_func(i)
-    #print(i)
-    
-    if randomize_pivots:
-        pivots = np.arange(0, 50)
-        np.random.shuffle(pivots)
-        pivot_A = pivots[0]
-        pivot_B = pivots[1]
-
-    # processing
-    #print(ts.num_trees, ts.num_sites)
-    Xxor = ts2X_vectorized(ts, window_size=2000, xor_ops=xor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
-    Xxnor = ts2X_vectorized(ts, window_size=2000, xor_ops=xnor, pivot_A=pivot_A, pivot_B=pivot_B).astype(np.float16)
-    X = np.stack([Xxor, Xxnor], axis=0).astype(np.float16)
-        
-    y = np.log(interpolate_tmrcas(ts.simplify(samples=[pivot_A, pivot_B]), window_size=2000)).astype(np.float16)
-    return X, y
+    mean_recom_rate, mean_mutat_rate = ts_simulation_func(i)
+    return mean_recom_rate, mean_mutat_rate
 
 def save_batch(data, idx, output_dir):
     os.makedirs(output_dir, exist_ok=True)
-    np.save(f'{output_dir}/X_{idx}.npy', np.stack([X for X, _ in data]))
-    np.save(f'{output_dir}/y_{idx}.npy', np.stack([y for _, y in data]))
+    np.save(f'{output_dir}/r_{idx}.npy', np.stack([X for X, _ in data]))
+    np.save(f'{output_dir}/m_{idx}.npy', np.stack([y for _, y in data]))
 
 def process_batches(num_samples: int, start_batch: int,
                     batch_size: int, num_processes: int,

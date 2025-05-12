@@ -18,7 +18,7 @@ def generate_causal_mask(seq_len, full_attention_n=None, device="cpu"):
     mask[:full_attention_n, :full_attention_n] = 1  # Full attention for first n tokens
     return mask.bool().unsqueeze(0).unsqueeze(0)
 
-num_gpus = 4
+num_gpus = 2
 config = {
     'training': {
         'max_steps': 50_000 * 2,
@@ -26,58 +26,16 @@ config = {
         'min_lr': 3e-4 * 0.1,
         'warmup_iters': 10,
         'lr_decay_iters': 50_000 * 3,
-        'batch_size': 196, 
-        'grad_accum_steps': 1, 
+        'batch_size': 32,#196, 
+        'grad_accum_steps': 6,#1, 
         'weight_decay': 0.1,
         'betas': (0.9, 0.95),
-        'num_workers': num_gpus,
+        'num_workers': 16,#8,
     }
 }
 
-"""
-@dataclass
-class TokenFreeDecoderConfig:
-    num_samples: int = 50
-    sample_scale_embd: int = 2
-    output_dim: int = 256+2
-    n_embd: int = 400 #768
-    combined_dim: int = 1001
-    n_layer: int = 6 #12
-    bias: bool = False
-    dropout: float = 0.1
-    n_head: int = 4 #8
-    device: str = "cuda"
-    batch_size: int = config['training']['batch_size']
-"""
-
-@dataclass
-class TokenFreeDecoderConfig:
-    num_samples: int = 50
-    sample_scale_embd: int = 2
-    output_dim: int = 324+2
-    n_embd: int = 400 #768
-    combined_dim: int = 1001
-    n_layer: int = 6 #12
-    bias: bool = False
-    dropout: float = 0.1
-    n_head: int = 4 #8
-    device: str = "cuda"
-    batch_size: int = config['training']['batch_size']
 
 
-@dataclass
-class TokenFreeDecoderConfig:
-    num_samples: int = 50
-    sample_scale_embd: int = 2
-    output_dim: int = 324+2
-    n_embd: int = 400 
-    combined_dim: int = 1001
-    n_layer: int = 10
-    bias: bool = False
-    dropout: float = 0.1
-    n_head: int = 4
-    device: str = "cuda"
-    batch_size: int = config['training']['batch_size']
 
 class LitTokenFreeDecoder(L.LightningModule):
     def __init__(self, gpt_config):
@@ -87,7 +45,6 @@ class LitTokenFreeDecoder(L.LightningModule):
         self.save_hyperparameters(ignore=['model'])
     def training_step(self, batch, batch_idx):
         x, y = batch
-        #with torch.autocast(device_type=self.device.type, dtype=torch.bfloat16):
         attn_mask = generate_causal_mask(1001, full_attention_n=501, device='cuda')
         #attn_mask = generate_causal_mask(1001, device='cuda')
         attn_mask = attn_mask.repeat(x.size(0), 1, 1, 1)
@@ -154,6 +111,72 @@ if __name__ == "__main__":
     learning_rate = args.learning_rate
     test_batches = args.test_batches
     config['training']['max_lr'] = learning_rate
+
+    # narrow model
+    @dataclass
+    class TokenFreeDecoderConfig:
+        num_samples: int = 50
+        sample_scale_embd: int = 2
+        output_dim: int = 256+2
+        n_embd: int = 400 #768
+        combined_dim: int = 1001
+        n_layer: int = 6 #12
+        bias: bool = False
+        dropout: float = 0.1
+        n_head: int = 4 #8
+        device: str = "cuda"
+        batch_size: int = config['training']['batch_size']
+
+    # to be deleted
+    """
+    @dataclass
+    class TokenFreeDecoderConfig:
+        num_samples: int = 50
+        sample_scale_embd: int = 2
+        output_dim: int = 324+2
+        n_embd: int = 400 #768
+        combined_dim: int = 1001
+        n_layer: int = 6 #12
+        bias: bool = False
+        dropout: float = 0.1
+        n_head: int = 4 #8
+        device: str = "cuda"
+        batch_size: int = config['training']['batch_size']
+    """
+
+    
+    # board model
+    @dataclass
+    class TokenFreeDecoderConfig:
+        num_samples: int = 50
+        sample_scale_embd: int = 2
+        output_dim: int = 324+2
+        n_embd: int = 400 
+        combined_dim: int = 1001
+        n_layer: int = 10
+        bias: bool = False
+        dropout: float = 0.1
+        n_head: int = 4
+        device: str = "cuda"
+        batch_size: int = config['training']['batch_size']
+    
+
+    # to be deleted
+    """ 
+    @dataclass
+    class TokenFreeDecoderConfig:
+        num_samples: int = 50
+        sample_scale_embd: int = 3
+        output_dim: int = 324+2
+        n_embd: int = 600 
+        combined_dim: int = 1001
+        n_layer: int = 12
+        bias: bool = False
+        dropout: float = 0.1
+        n_head: int = 6
+        device: str = "cuda"
+        batch_size: int = config['training']['batch_size']
+    """
     
 
     # Check if dataset_path contains multiple subdirectories

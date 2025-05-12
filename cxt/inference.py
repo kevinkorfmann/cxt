@@ -17,9 +17,14 @@ from cxt.utils import process_pair
 def totensorlist(l): return [torch.tensor(a) for a in l]
 
 import torch.multiprocessing as mp
-from cxt.config import TokenFreeDecoderConfig
+#from cxt.config import TokenFreeDecoderConfig
+#from cxt.config import NarrowModelConfig, BroadModelConfig
+
 from collections import defaultdict
 
+
+BATCH = 1225#45#190#1225#190#1225
+NUM_SAMPLES = 50#10#20#50#20#50
 
 def generate_nokv(model, src, top_k=None, temperature=1, max_len=500, device='cuda'):
     with torch.no_grad():
@@ -87,7 +92,7 @@ def load_model(config, model_path=None, device='cuda'):
     model.eval()
     return model
 
-def prepare_ts_data(ts: object, num_samples: int, B: int, device='cuda', num_processes=50) -> tuple:
+def prepare_ts_data(ts: object, num_samples: int, B: int, device='cuda', num_processes=50, offset=0, ignore_target=False) -> tuple:
     """
     Prepares the data for the model by processing pairs of samples from the tree sequence.
 
@@ -100,7 +105,7 @@ def prepare_ts_data(ts: object, num_samples: int, B: int, device='cuda', num_pro
     - src: Tensor containing the source data.
     - tgt: Tensor containing the target data.
     """
-    args = [(ts, a, b) for a, b in combinations(range(num_samples), 2)]
+    args = [(ts, a, b, offset, ignore_target) for a, b in combinations(range(num_samples), 2)]
     with Pool(num_processes) as pool: 
         results = list(tqdm(pool.imap(process_pair, args), total=B))
     src_list, tgt_list = zip(*results)
@@ -109,9 +114,10 @@ def prepare_ts_data(ts: object, num_samples: int, B: int, device='cuda', num_pro
     src = torch.stack(src_list, dim=0)  
     tgt = torch.stack(tgt_list, dim=0) 
     src = src.to(device).to(torch.float32)
+    #src = src.to(torch.bfloat16)
     return src, tgt
 
-def prepare_tss_data(ts_list: list, num_samples: int, B: int, device='cuda', num_processes=50) -> tuple:
+def prepare_tss_data(ts_list: list, num_samples: int, B: int, device='cuda', num_processes=50, offset=0, ignore_target=False) -> tuple:
     """
     Prepares the data for the model by processing pairs of samples from multiple tree sequences.
 
@@ -128,7 +134,7 @@ def prepare_tss_data(ts_list: list, num_samples: int, B: int, device='cuda', num
     """
     args = []
     for ts in ts_list:
-        args.extend([(ts, a, b) for a, b in combinations(range(num_samples), 2)])
+        args.extend([(ts, a, b, offset, ignore_target) for a, b in combinations(range(num_samples), 2)])
 
     with Pool(num_processes) as pool: 
         results = list(tqdm(pool.imap(process_pair, args), total=B * len(ts_list)))
@@ -141,7 +147,7 @@ def prepare_tss_data(ts_list: list, num_samples: int, B: int, device='cuda', num
     tgt = torch.stack(tgt_list, dim=0)
 
     src = src.to(device).to(torch.float32)
-    tgt = tgt.to(device).to(torch.float32)
+    #tgt = tgt.to(device).to(torch.float32)
 
     return src, tgt
 
@@ -151,7 +157,9 @@ def translate_from_ts(
         max_replicates = 20, use_early_stopping = True,
         model_config=None,
         model_path=None,
-        device='cuda'
+        device='cuda',
+        offset=0,
+        ignore_target=False
     ):
     """Assumes sample size of 50 for now and large enough GPU to fit 1225 batch."""
 
@@ -161,21 +169,22 @@ def translate_from_ts(
         device=device
     )
 
-    src, tgt = prepare_ts_data(ts, num_samples=50, B=1225, device=device)
+    src, tgt = prepare_ts_data(ts, num_samples=50, B=1225, device=device, offset=offset, ignore_target=ignore_target)
     yhats, ytrues = [], []
     for i in range(max_replicates):
         sequence = generate(model, src, B=1225, device=device)
         yhat, ytrue = post_process(tgt, sequence, TIMES)
         yhats.append(yhat)
         ytrues.append(ytrue)
-        if use_early_stopping:
-            # early stopping criteria
-            if i > 1:
-                mses = accumulating_mses(yhats, ytrues)
-                derivatives = np.diff(mses)
-                if abs(derivatives[-1]) < 0.001:
-                    print(f"Stopping at {i} because derivative is {derivatives[-1]}.")
-                    break
+        if not ignore_target:
+            if use_early_stopping:
+                # early stopping criteria
+                if i > 1:
+                    mses = accumulating_mses(yhats, ytrues)
+                    derivatives = np.diff(mses)
+                    if abs(derivatives[-1]) < 0.001:
+                        print(f"Stopping at {i} because derivative is {derivatives[-1]}.")
+                        break
     yhats = np.stack(yhats)
     ytrues = np.stack(ytrues)  
     return yhats, ytrues
@@ -342,7 +351,7 @@ def run_inference_multi_gpu_jupyter_multi_ts(rank, models, ts_data_list, devices
                             desc=f"[GPU {rank}] TS {ts_idx} ⏳ Processing", position=rank, leave=True)
 
         for _ in progress_bar:
-            sequence = generate(model, src.to(device), B=1225, device=device)
+            sequence = generate(model, src.to(device), B=BATCH, device=device)
             yhat, ytrue = post_process(tgt, sequence, TIMES)
             yhat_list.append(yhat)
             ytrue_list.append(ytrue)
@@ -358,7 +367,9 @@ def translate_from_multi_ts_multi_gpu(
         model_config=None, 
         model_path=None,
         devices=['cuda:0', 'cuda:1', 'cuda:2'],
-        num_processes_ts_preproc=30
+        num_processes_ts_preproc=30,
+        offset=0,
+        ignore_target=False,
     ):
 
     mp.set_start_method('spawn', force=True)
@@ -377,11 +388,32 @@ def translate_from_multi_ts_multi_gpu(
         )
         models.append(model)
 
-    # Preprocess all TS files into (src, tgt) pairs
-    ts_data_list = [
-        prepare_ts_data(ts, num_samples=50, B=1225, device='cpu', num_processes=num_processes_ts_preproc)
-        for ts in ts_list
-    ]
+    #ts_data_list = [
+    #    prepare_ts_data(
+    #        ts,
+    #        num_samples=NUM_SAMPLES, B=BATCH,
+    #        device='cpu',
+    #        num_processes=num_processes_ts_preproc,
+    #        offset=offset,
+    #        ignore_target=ignore_target
+    #        )
+    #    for ts in ts_list
+    #]
+    ts_data_list = prepare_tss_data(
+            ts_list,
+            num_samples=NUM_SAMPLES, B=BATCH,
+            device='cpu',
+            num_processes=num_processes_ts_preproc,
+            offset=offset,
+            ignore_target=ignore_target
+        )
+
+    new_ts_data_list = []
+    src, tgt = ts_data_list
+    for i in range(len(src) // BATCH):
+        new_ts_data_list.append((src[i*BATCH:(i+1)*BATCH], tgt[i*BATCH:(i+1)*BATCH]))
+    ts_data_list = new_ts_data_list
+    
 
     mp.spawn(run_inference_multi_gpu_jupyter_multi_ts, args=(models, ts_data_list, devices, queue, replicates_per_process), 
              nprocs=num_processes, join=True)

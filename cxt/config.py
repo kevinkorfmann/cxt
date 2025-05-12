@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-"""
+
 @dataclass
-class TokenFreeDecoderConfig:
+class NarrowModelConfig:
     num_samples: int = 50
     sample_scale_embd: int = 2 
     output_dim: int = 256+2
@@ -14,10 +14,10 @@ class TokenFreeDecoderConfig:
     n_head: int = 4
     device: str = 'cuda'
     batch_size: int = 1225
-"""
+
 
 @dataclass
-class TokenFreeDecoderConfig:
+class BroadModelConfig:
     num_samples: int = 50
     sample_scale_embd: int = 2
     output_dim: int = 324+2
