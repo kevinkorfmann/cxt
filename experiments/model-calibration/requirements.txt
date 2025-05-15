@@ -1,0 +1,5 @@
+ray
+numpy
+stdpopsim==0.3.0
+argparse
+matplotlib

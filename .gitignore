@@ -6,3 +6,7 @@ tmp
 cxt/lightning_logs
 cxt/__pycache__
 models
+
+# vim
+*.swp
+*.swo

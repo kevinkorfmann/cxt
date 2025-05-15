@@ -338,3 +338,32 @@ def accumulating_mses(yhats, ytrues):
     return mse_values
 
 
+def diversity_bias_correction(
+    tree_sequence: tskit.TreeSequence,
+    mutation_rate: float,
+    predictions: np.ndarray,
+    pivot_pairs: np.ndarray,
+    use_pooled_diversity: bool = False,
+) -> np.ndarray:
+    """
+    Correct the predicted TMRCAs such that expected diversity matches
+    observed diversity, for a given mutation rate. If `use_pooled_diversity`,
+    then the moment-matching is done over all pivot pairs rather than separately
+    per pivot pair.
+    """
+    assert predictions.ndim == 2
+    assert pivot_pairs.ndim == 2
+    assert pivot_pairs.shape[0] == predictions.shape[0]
+    assert pivot_pairs.shape[1] == 2
+    obs_div = tree_sequence.trim().diversity(sample_sets=pivot_pairs)
+    fit_div = 2 * np.mean(np.exp(predictions), axis=-1) * mutation_rate
+    if use_pooled_diversity:
+        obs_div = np.full_like(obs_div, obs_div.mean())
+        fit_div = np.full_like(fit_div, fit_div.mean())
+    assert np.all(obs_div > 0)
+    assert np.all(fit_div > 0)
+    corrected = predictions + (np.log(obs_div) - np.log(fit_div))[:, np.newaxis]
+    return corrected
+
+
+
