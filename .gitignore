@@ -8,3 +8,7 @@ cxt/__pycache__
 models
 figures_paper
 cxt/scripts/parameter_scripts/parameter
+
+# vim
+*.swp
+*.swo
