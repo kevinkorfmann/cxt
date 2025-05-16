@@ -66,97 +66,93 @@ if __name__ == "__main__":
         for i in range(ts.num_samples) 
         for j in range(i + 1, ts.num_samples)
     ])
-    corrected_yhats = np.stack([
+    corrected_yhats_pool, corrected_baselines_pool = \
         diversity_bias_correction(
             tree_sequence=ts,
             mutation_rate=contig.mutation_rate,
-            predictions=yhat,
+            predictions=yhats,
             pivot_pairs=pivot_pairs,
-            use_pooled_diversity=False,
-        ) for yhat in yhats
-    ])
-    corrected_yhats_pool = np.stack([
-        diversity_bias_correction(
-            tree_sequence=ts,
-            mutation_rate=contig.mutation_rate,
-            predictions=yhat,
-            pivot_pairs=pivot_pairs,
-            use_pooled_diversity=True,
-        ) for yhat in yhats
-    ])
+            return_intercept=True,
+        )
+    corrected_yhats_pool = corrected_yhats_pool.mean(axis=0) # average over reps
     rmse = np.sqrt(np.mean(np.power(yhats - ytrues, 2), axis=-1))
-    corrected_rmse = np.sqrt(np.mean(np.power(corrected_yhats - ytrues, 2), axis=-1))
     corrected_rmse_pool = np.sqrt(np.mean(np.power(corrected_yhats_pool - ytrues, 2), axis=-1))
+    corrected_rmse_baseline = np.sqrt(np.mean(np.power(corrected_baselines_pool - ytrues, 2), axis=-1))
     bias = np.mean(yhats - ytrues, axis=-1)
-    corrected_bias = np.mean(corrected_yhats - ytrues, axis=-1)
     corrected_bias_pool = np.mean(corrected_yhats_pool - ytrues, axis=-1)
+    corrected_bias_baseline = np.mean(corrected_baselines_pool - ytrues, axis=-1)
     
-    order = np.argsort(np.mean(rmse, axis=0))
+    rmse_order = np.argsort(np.mean(rmse, axis=0))
+    corrected_rmse_pool_order = np.argsort(np.mean(corrected_rmse_pool, axis=0))
+    corrected_rmse_baseline_order = np.argsort(np.mean(corrected_rmse_baseline, axis=0))
+    bias_order = np.argsort(np.mean(bias, axis=0))
+    corrected_bias_pool_order = np.argsort(np.mean(corrected_bias_pool, axis=0))
+    corrected_bias_baseline_order = np.argsort(np.mean(corrected_bias_baseline, axis=0))
     fig, axs = plt.subplots(2, 1, figsize=(8, 8), constrained_layout=True, squeeze=False, sharex=True)
     # rmse
     axs[0,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(rmse[:, order], axis=0), 
+        np.mean(rmse[:, rmse_order], axis=0), 
         "o", 
         color="black",
         markersize=1,
-        label="raw",
+        label="cxt-only",
     )
     axs[0,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(corrected_rmse[:, order], axis=0), 
+        np.mean(corrected_rmse_baseline[:, corrected_rmse_baseline_order], axis=0), 
         "o", 
         color="blue", 
         markersize=1,
-        label="corrected-per-pair",
+        label="correction-only",
     )
     axs[0,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(corrected_rmse_pool[:, order], axis=0), 
+        np.mean(corrected_rmse_pool[:, corrected_rmse_pool_order], axis=0), 
         "o", 
         color="red", 
         markersize=1,
-        label="corrected-pooled",
+        label="cxt+correction",
     )
     axs[0,0].legend()
     axs[0,0].set_xticklabels([])
     axs[0,0].set_ylabel("RMSE")
     axs[0,0].set_title(
         f"mut-scale: {args.mutation_scale}, "
-        f"rec-scale: {args.recombination_scale}"
+        f"rec-scale: {args.recombination_scale}, "
         f"coal-scale: {args.coal_unit_scale}, "
         f"growth-scale: {args.growth_rate_scale}"
     )
     # bias
     axs[1,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(bias[:, order], axis=0), 
+        np.mean(bias[:, bias_order], axis=0), 
         "o", 
         color="black",
         markersize=1,
-        label="raw",
+        label="cxt-only",
     )
     axs[1,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(corrected_bias[:, order], axis=0), 
+        np.mean(corrected_bias_baseline[:, corrected_bias_baseline_order], axis=0), 
         "o", 
         color="blue", 
         markersize=1,
-        label="corrected-per-pair",
+        label="correction-only",
     )
     axs[1,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(corrected_bias_pool[:, order], axis=0), 
+        np.mean(corrected_bias_pool[:, corrected_bias_pool_order], axis=0), 
         "o", 
         color="red", 
         markersize=1,
-        label="corrected-pooled",
+        label="cxt+correction",
     )
     axs[1,0].axhline(y=0.0, linestyle="dashed", color="black")
     axs[1,0].legend()
     axs[1,0].set_xticklabels([])
     axs[1,0].set_ylabel("Bias")
-    fig.supxlabel("Pivot pair (sorted by RMSE-raw)")
+    fig.supxlabel("Pivot pair (sorted)")
     plt.savefig(f"{args.outpath}")
 
 
