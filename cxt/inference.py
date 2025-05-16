@@ -23,8 +23,8 @@ import torch.multiprocessing as mp
 from collections import defaultdict
 
 
-BATCH = 1225#45#190#1225#190#1225
-NUM_SAMPLES = 50#10#20#50#20#50
+BATCH = 190#1225#45#190#1225#190#1225
+NUM_SAMPLES = 20#50#10#20#50#20#50
 
 def generate_nokv(model, src, top_k=None, temperature=1, max_len=500, device='cuda'):
     with torch.no_grad():
