@@ -6,3 +6,5 @@ tmp
 cxt/lightning_logs
 cxt/__pycache__
 models
+figures_paper
+cxt/scripts/parameter_scripts/parameter
