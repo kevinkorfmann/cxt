@@ -343,27 +343,72 @@ def diversity_bias_correction(
     mutation_rate: float,
     predictions: np.ndarray,
     pivot_pairs: np.ndarray,
-    use_pooled_diversity: bool = False,
-) -> np.ndarray:
+    zero_offset: float = 0.0,
+    return_intercept: bool = False,
+) -> (np.ndarray, np.ndarray):
     """
     Correct the predicted TMRCAs such that expected diversity matches
-    observed diversity, for a given mutation rate. If `use_pooled_diversity`,
-    then the moment-matching is done over all pivot pairs rather than separately
-    per pivot pair.
+    observed diversity, for a given mutation rate. 
+
+    The input predictions are assumed to have dimensions 
+    `(replicates, pairs, windows)`.
+
+    The correction is undefined for pairs with zero observed diversity.
+    In this case, an offset equal to the minimum nonzero diversity in the sample 
+    is added (if `zero_offset` is zero, default).
     """
-    assert predictions.ndim == 2
+    assert predictions.ndim == 3
     assert pivot_pairs.ndim == 2
-    assert pivot_pairs.shape[0] == predictions.shape[0]
+    assert pivot_pairs.shape[0] == predictions.shape[1]
     assert pivot_pairs.shape[1] == 2
     obs_div = tree_sequence.trim().diversity(sample_sets=pivot_pairs)
-    fit_div = 2 * np.mean(np.exp(predictions), axis=-1) * mutation_rate
-    if use_pooled_diversity:
-        obs_div = np.full_like(obs_div, obs_div.mean())
-        fit_div = np.full_like(fit_div, fit_div.mean())
+    # NB: average over replicates in log space
+    fit_div = 2 * np.exp(predictions.mean(axis=0)).mean(axis=-1) * mutation_rate
+    obs_div[obs_div == 0] = obs_div[obs_div > 0].min() if zero_offset == 0 \
+        else zero_offset / tree_sequence.trim().sequence_length
     assert np.all(obs_div > 0)
     assert np.all(fit_div > 0)
-    corrected = predictions + (np.log(obs_div) - np.log(fit_div))[:, np.newaxis]
-    return corrected
+    corrected = predictions + (np.log(obs_div) - np.log(fit_div))[np.newaxis, :, np.newaxis]
+    intercept = np.log(obs_div / mutation_rate / 2)[None, :, None]
+    return corrected if not return_intercept else (corrected, intercept)
 
+
+def diversity_bias_correction_by_rep(
+    tree_sequence: tskit.TreeSequence,
+    mutation_rate: float,
+    predictions: np.ndarray,
+    pivot_pairs: np.ndarray,
+    zero_offset: float = 0.0,
+    return_intercept: bool = False,
+) -> (np.ndarray, np.ndarray):
+    """
+    Correct the predicted TMRCAs such that expected diversity matches
+    observed diversity, for a given mutation rate. 
+
+    The input predictions are assumed to have dimensions 
+    `(replicates, pairs, windows)`.
+
+    The correction is undefined for pairs with zero observed diversity.
+    In this case, an offset equal to the minimum nonzero diversity in the sample 
+    is added (if `zero_offset` is zero, default).
+    """
+    assert predictions.ndim == 3
+    assert pivot_pairs.ndim == 2
+    assert pivot_pairs.shape[0] == predictions.shape[1]
+    assert pivot_pairs.shape[1] == 2
+    obs_div = tree_sequence.trim().diversity(sample_sets=pivot_pairs)
+    obs_div[obs_div == 0] = obs_div[obs_div > 0].min() if zero_offset == 0 \
+        else zero_offset / tree_sequence.trim().sequence_length
+    corrected = []
+    for rep in predictions:
+        fit_div = 2 * np.exp(rep).mean(axis=-1) * mutation_rate
+        assert np.all(obs_div > 0)
+        assert np.all(fit_div > 0)
+        corrected.append(
+            rep + (np.log(obs_div) - np.log(fit_div))[:, np.newaxis]
+        )
+    corrected = np.stack(corrected)
+    intercept = np.log(obs_div / mutation_rate / 2)[None, :, None]
+    return corrected if not return_intercept else (corrected, intercept)
 
 
