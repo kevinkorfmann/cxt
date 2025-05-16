@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from cxt.inference import translate_from_multi_ts_multi_gpu
 from cxt.config import BroadModelConfig 
 from cxt.utils import diversity_bias_correction
+from cxt.utils import diversity_bias_correction_by_rep
 
 from model_rescaling import scale_model, scale_growth_rates
 
@@ -21,6 +22,7 @@ if __name__ == "__main__":
     parser.add_argument("--growth-rate-scale", type=float, help="Scale exponential growth rates by this", default=1.0)
     parser.add_argument("--coal-unit-scale", type=float, help="Scale coalescent units by this", default=1.0)
     parser.add_argument("--overwrite-cache", action="store_true", help="Recalculate cached results")
+    parser.add_argument("--correct-by-rep", action="store_true", help="Do correction rep by rep rather than on rep average")
     parser.add_argument("--outpath", type=str, help="Output plot", default="correction-bias-and-rmse.png")
     args = parser.parse_args()
     
@@ -66,8 +68,10 @@ if __name__ == "__main__":
         for i in range(ts.num_samples) 
         for j in range(i + 1, ts.num_samples)
     ])
+    correction = diversity_bias_correction_by_rep if args.correct_by_rep else \
+        diversity_bias_correction
     corrected_yhats_pool, corrected_baselines_pool = \
-        diversity_bias_correction(
+        correction(
             tree_sequence=ts,
             mutation_rate=contig.mutation_rate,
             predictions=yhats,
