@@ -412,3 +412,48 @@ def diversity_bias_correction_by_rep(
     return corrected if not return_intercept else (corrected, intercept)
 
 
+def stochastic_diversity_bias_correction(
+    tree_sequence: tskit.TreeSequence,
+    mutation_rate: float,
+    predictions: np.ndarray,
+    pivot_pairs: np.ndarray,
+    return_intercept: bool = False,
+    rng: np.random.Generator = None,
+) -> (np.ndarray, np.ndarray):
+    r"""
+    Correct the predicted TMRCAs such that expected diversity matches
+    observed diversity, for a given mutation rate. This is done stochastically,
+    by using the fact that under the model,
+
+        mutation_count ~ Poisson(2 * correction * mu * \sum_i TMRCA_i * window_size_i)
+    
+    the posterior (given improper constant prior) is,
+
+        correction ~ Gamma(mutation_count + 1, 2 * mu * \sum_i TMRCA_i * window_size_i)
+
+    and sampling accordingly (e.g. iid for each TMRCA sample, pivot pair).
+    
+    The input predictions are assumed to have dimensions 
+    `(replicates, pairs, windows)`.
+    """
+    assert predictions.ndim == 3
+    assert pivot_pairs.ndim == 2
+    assert pivot_pairs.shape[0] == predictions.shape[1]
+    assert pivot_pairs.shape[1] == 2
+    if rng is None: rng = np.random.default_rng()
+    mutation_count = tree_sequence.trim().diversity(
+        sample_sets=pivot_pairs, span_normalise=False
+    )
+    sequence_length = tree_sequence.trim().sequence_length
+    corrected = []
+    intercept = []
+    for log_tmrca in predictions:
+        rate = 2 * np.exp(log_tmrca).mean(axis=-1) * mutation_rate * sequence_length
+        correction = rng.gamma(shape=mutation_count + 1, scale=1 / rate)
+        corrected.append(log_tmrca + np.log(correction)[:, np.newaxis])
+        intercept.append(
+            np.log(np.exp(log_tmrca).mean(axis=-1) * correction)[:, np.newaxis]
+        )
+    corrected = np.stack(corrected)
+    intercept = np.stack(intercept)
+    return corrected if not return_intercept else (corrected, intercept)

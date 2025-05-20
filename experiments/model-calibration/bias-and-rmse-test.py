@@ -10,6 +10,7 @@ from cxt.inference import translate_from_multi_ts_multi_gpu
 from cxt.config import BroadModelConfig 
 from cxt.utils import diversity_bias_correction
 from cxt.utils import diversity_bias_correction_by_rep
+from cxt.utils import stochastic_diversity_bias_correction
 
 from model_rescaling import scale_model, scale_growth_rates
 
@@ -22,7 +23,7 @@ if __name__ == "__main__":
     parser.add_argument("--growth-rate-scale", type=float, help="Scale exponential growth rates by this", default=1.0)
     parser.add_argument("--coal-unit-scale", type=float, help="Scale coalescent units by this", default=1.0)
     parser.add_argument("--overwrite-cache", action="store_true", help="Recalculate cached results")
-    parser.add_argument("--correct-by-rep", action="store_true", help="Do correction rep by rep rather than on rep average")
+    parser.add_argument("--correction-type", type=str, help="One of 'rep', 'pool', 'post'", default="rep")
     parser.add_argument("--outpath", type=str, help="Output plot", default="correction-bias-and-rmse.png")
     args = parser.parse_args()
     
@@ -68,8 +69,15 @@ if __name__ == "__main__":
         for i in range(ts.num_samples) 
         for j in range(i + 1, ts.num_samples)
     ])
-    correction = diversity_bias_correction_by_rep if args.correct_by_rep else \
-        diversity_bias_correction
+    match args.correction_type:
+        case "rep": 
+            correction = diversity_bias_correction_by_rep
+        case "pool":
+            correction = diversity_bias_correction
+        case "post":
+            correction = stochastic_diversity_bias_correction
+        case _:
+            raise ValueError(f"Bad match {args.correction_type}")
     corrected_yhats_pool, corrected_baselines_pool = \
         correction(
             tree_sequence=ts,
@@ -78,7 +86,13 @@ if __name__ == "__main__":
             pivot_pairs=pivot_pairs,
             return_intercept=True,
         )
-    corrected_yhats_pool = corrected_yhats_pool.mean(axis=0) # average over reps
+    
+    # average over reps
+    yhats = yhats.mean(axis=0)
+    ytrues = ytrues.mean(axis=0)
+    corrected_baselines_pool = corrected_baselines_pool.mean(axis=0)
+    corrected_yhats_pool = corrected_yhats_pool.mean(axis=0)
+
     rmse = np.sqrt(np.mean(np.power(yhats - ytrues, 2), axis=-1))
     corrected_rmse_pool = np.sqrt(np.mean(np.power(corrected_yhats_pool - ytrues, 2), axis=-1))
     corrected_rmse_baseline = np.sqrt(np.mean(np.power(corrected_baselines_pool - ytrues, 2), axis=-1))
@@ -86,17 +100,17 @@ if __name__ == "__main__":
     corrected_bias_pool = np.mean(corrected_yhats_pool - ytrues, axis=-1)
     corrected_bias_baseline = np.mean(corrected_baselines_pool - ytrues, axis=-1)
     
-    rmse_order = np.argsort(np.mean(rmse, axis=0))
-    corrected_rmse_pool_order = np.argsort(np.mean(corrected_rmse_pool, axis=0))
-    corrected_rmse_baseline_order = np.argsort(np.mean(corrected_rmse_baseline, axis=0))
-    bias_order = np.argsort(np.mean(bias, axis=0))
-    corrected_bias_pool_order = np.argsort(np.mean(corrected_bias_pool, axis=0))
-    corrected_bias_baseline_order = np.argsort(np.mean(corrected_bias_baseline, axis=0))
+    rmse_order = np.argsort(rmse)
+    corrected_rmse_pool_order = np.argsort(corrected_rmse_pool)
+    corrected_rmse_baseline_order = np.argsort(corrected_rmse_baseline)
+    bias_order = np.argsort(bias)
+    corrected_bias_pool_order = np.argsort(corrected_bias_pool)
+    corrected_bias_baseline_order = np.argsort(corrected_bias_baseline)
     fig, axs = plt.subplots(2, 1, figsize=(8, 8), constrained_layout=True, squeeze=False, sharex=True)
     # rmse
     axs[0,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(rmse[:, rmse_order], axis=0), 
+        rmse[rmse_order], 
         "o", 
         color="black",
         markersize=1,
@@ -104,7 +118,7 @@ if __name__ == "__main__":
     )
     axs[0,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(corrected_rmse_baseline[:, corrected_rmse_baseline_order], axis=0), 
+        corrected_rmse_baseline[corrected_rmse_baseline_order],
         "o", 
         color="blue", 
         markersize=1,
@@ -112,7 +126,7 @@ if __name__ == "__main__":
     )
     axs[0,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(corrected_rmse_pool[:, corrected_rmse_pool_order], axis=0), 
+        corrected_rmse_pool[corrected_rmse_pool_order], 
         "o", 
         color="red", 
         markersize=1,
@@ -130,7 +144,7 @@ if __name__ == "__main__":
     # bias
     axs[1,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(bias[:, bias_order], axis=0), 
+        bias[bias_order],
         "o", 
         color="black",
         markersize=1,
@@ -138,7 +152,7 @@ if __name__ == "__main__":
     )
     axs[1,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(corrected_bias_baseline[:, corrected_bias_baseline_order], axis=0), 
+        corrected_bias_baseline[corrected_bias_baseline_order],
         "o", 
         color="blue", 
         markersize=1,
@@ -146,7 +160,7 @@ if __name__ == "__main__":
     )
     axs[1,0].plot(
         np.arange(pivot_pairs.shape[0]), 
-        np.mean(corrected_bias_pool[:, corrected_bias_pool_order], axis=0), 
+        corrected_bias_pool[corrected_bias_pool_order],
         "o", 
         color="red", 
         markersize=1,
