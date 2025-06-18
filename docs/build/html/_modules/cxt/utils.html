@@ -30,7 +30,6 @@
           
           <a href="../../index.html">
             
-              <img src="../../_static/logo_3d_2.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -43,11 +42,9 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">Tutorial for Inference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../simulation.html">Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training.html">Training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../comparison.html">Comparisons with other tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../gallery.html">Gallery</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api.html">API documentation</a></li>
 </ul>
 
@@ -83,6 +80,10 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
+<span class="c1">#TIMES = np.linspace(3, 14, 256)</span>
+<span class="n">TIMES</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">324</span><span class="p">)</span>
+
+
 <span class="n">retrieve_site_positions</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">ts</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">site</span><span class="o">.</span><span class="n">position</span> <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">ts</span><span class="o">.</span><span class="n">sites</span><span class="p">()])</span>
 <span class="n">xor</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="p">(</span><span class="n">a</span><span class="o">^</span><span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="n">xnor</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">xor</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
@@ -96,6 +97,82 @@
     <span class="k">return</span> <span class="n">indices</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
 
 
+<div class="viewcode-block" id="sample_population_size">
+<a class="viewcode-back" href="../../api.html#cxt.utils.sample_population_size">[docs]</a>
+<span class="k">def</span> <span class="nf">sample_population_size</span><span class="p">(</span><span class="n">n_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">n_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100_000</span><span class="p">,</span> <span class="n">num_time_windows</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>  <span class="c1"># Use a local random generator</span>
+    <span class="n">n_min_log</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n_min</span><span class="p">)</span>
+    <span class="n">n_max_log</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n_max</span><span class="p">)</span>
+    <span class="n">population_size</span> <span class="o">=</span> <span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">n_min_log</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">n_max_log</span><span class="p">)]</span>
+    
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_time_windows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">next_population_size</span> <span class="o">=</span> <span class="n">population_size</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="p">(</span><span class="n">n_min_log</span> <span class="o">&lt;=</span> <span class="n">next_population_size</span> <span class="o">&lt;=</span> <span class="n">n_max_log</span><span class="p">):</span>
+            <span class="n">next_population_size</span> <span class="o">=</span> <span class="n">population_size</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+        <span class="n">population_size</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">next_population_size</span><span class="p">)</span>
+    
+    <span class="c1"># Smooth the trajectory using a moving average</span>
+    <span class="n">population_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">population_size</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)</span>
+    <span class="n">population_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">population_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">population_size</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">population_size</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">population_size</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>  </div>
+
+
+<div class="viewcode-block" id="sample_demography">
+<a class="viewcode-back" href="../../api.html#cxt.utils.sample_demography">[docs]</a>
+<span class="k">def</span> <span class="nf">sample_demography</span><span class="p">(</span><span class="n">n_min</span><span class="o">=</span><span class="mi">10_000</span><span class="p">,</span> <span class="n">n_max</span><span class="o">=</span><span class="mi">200_000</span><span class="p">,</span> <span class="n">num_time_windows</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">time_steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="n">num_time_windows</span><span class="p">)</span>
+    <span class="n">population_size</span> <span class="o">=</span> <span class="n">sample_population_size</span><span class="p">(</span><span class="n">n_min</span><span class="p">,</span> <span class="n">n_max</span><span class="p">,</span> <span class="n">num_time_windows</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">demography</span><span class="o">=</span><span class="n">msprime</span><span class="o">.</span><span class="n">Demography</span><span class="p">()</span>
+    <span class="n">demography</span><span class="o">.</span><span class="n">add_population</span><span class="p">(</span><span class="n">initial_size</span><span class="o">=</span><span class="p">(</span><span class="n">population_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">time_steps</span><span class="p">,</span> <span class="n">population_size</span><span class="p">)):</span>
+        <span class="n">demography</span><span class="o">.</span><span class="n">add_population_parameters_change</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span> <span class="n">initial_size</span><span class="o">=</span><span class="n">size</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">demography</span></div>
+
+
+
+
+<div class="viewcode-block" id="DemographyStorage">
+<a class="viewcode-back" href="../../api.html#cxt.utils.DemographyStorage">[docs]</a>
+<span class="k">class</span> <span class="nc">DemographyStorage</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mutation_rate_range</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-9</span><span class="p">,</span> <span class="mf">1e-8</span><span class="p">),</span> <span class="n">recombination_rate_range</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-9</span><span class="p">,</span> <span class="mf">1e-8</span><span class="p">)):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutation_rate_range</span> <span class="o">=</span> <span class="n">mutation_rate_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recombination_rate_range</span> <span class="o">=</span> <span class="n">recombination_rate_range</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">demography_seeds</span>  <span class="o">=</span> <span class="p">[</span>
+            <span class="mh">0x8534AA</span><span class="p">,</span> <span class="mh">0x4BAA50</span><span class="p">,</span> <span class="mh">0xC47D25</span><span class="p">,</span> <span class="mh">0x835F0D</span><span class="p">,</span> <span class="mh">0x28CEC5</span><span class="p">,</span> <span class="mh">0x29C8FB</span><span class="p">,</span> <span class="mh">0xEC5342</span><span class="p">,</span> <span class="mh">0xDF16F4</span><span class="p">,</span>
+            <span class="mh">0x6BB979</span><span class="p">,</span> <span class="mh">0x72645C</span><span class="p">,</span> <span class="mh">0x5A0518</span><span class="p">,</span> <span class="mh">0xA2DB99</span><span class="p">,</span> <span class="mh">0xB08ED9</span><span class="p">,</span> <span class="mh">0xC6464C</span><span class="p">,</span> <span class="mh">0x2259B4</span><span class="p">,</span> <span class="mh">0xAEE45A</span><span class="p">,</span>
+            <span class="mh">0x907817</span><span class="p">,</span> <span class="mh">0x6271C5</span><span class="p">,</span> <span class="mh">0xF61BBE</span><span class="p">,</span> <span class="mh">0xD4E56A</span><span class="p">,</span> <span class="mh">0x451CA4</span><span class="p">,</span> <span class="mh">0xFEFF41</span><span class="p">,</span> <span class="mh">0x994C38</span><span class="p">,</span> <span class="mh">0xFC971C</span><span class="p">,</span>
+            <span class="mh">0x7EA959</span><span class="p">,</span> <span class="mh">0xB893CD</span><span class="p">,</span> <span class="mh">0x7623E6</span><span class="p">,</span> <span class="mh">0x725A75</span><span class="p">,</span> <span class="mh">0x8DFBFF</span><span class="p">,</span> <span class="mh">0xD50EDE</span><span class="p">,</span> <span class="mh">0x8097F1</span><span class="p">,</span> <span class="mh">0xECB91F</span><span class="p">,</span>
+            <span class="mh">0xBB2A96</span><span class="p">,</span> <span class="mh">0x221B88</span><span class="p">,</span> <span class="mh">0x2EC6F3</span><span class="p">,</span> <span class="mh">0x5CF515</span><span class="p">,</span> <span class="mh">0x634F11</span><span class="p">,</span> <span class="mh">0xAB689E</span><span class="p">,</span> <span class="mh">0x711F54</span><span class="p">,</span> <span class="mh">0xD16D4D</span><span class="p">,</span>
+            <span class="mh">0x5F846E</span><span class="p">,</span> <span class="mh">0xAF8922</span><span class="p">,</span> <span class="mh">0x1C016C</span><span class="p">,</span> <span class="mh">0xEA592C</span><span class="p">,</span> <span class="mh">0x72D1FE</span><span class="p">,</span> <span class="mh">0xF6389F</span><span class="p">,</span> <span class="mh">0xCBD018</span><span class="p">,</span> <span class="mh">0x59E61C</span><span class="p">,</span>
+            <span class="mh">0x24D3EF</span><span class="p">,</span> <span class="mh">0x944E92</span><span class="p">,</span> <span class="mh">0x1E9A5E</span><span class="p">,</span> <span class="mh">0x88C3A4</span><span class="p">,</span> <span class="mh">0x61860D</span><span class="p">,</span> <span class="mh">0xC27EA8</span><span class="p">,</span> <span class="mh">0x568673</span><span class="p">,</span> <span class="mh">0xD4B5A0</span><span class="p">,</span>
+            <span class="mh">0xE32F8D</span><span class="p">,</span> <span class="mh">0xA4E4A3</span><span class="p">,</span> <span class="mh">0x83ECD2</span><span class="p">,</span> <span class="mh">0xC5A2D9</span><span class="p">,</span> <span class="mh">0xCE4F5C</span><span class="p">,</span> <span class="mh">0x34DEA3</span><span class="p">,</span> <span class="mh">0x5E33B3</span><span class="p">,</span> <span class="mh">0x589D1B</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combinations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_combinations</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">_generate_combinations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local_seed</span><span class="o">=</span><span class="mh">0x8534AA</span><span class="p">):</span>
+        <span class="n">combinations</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">local_seed</span><span class="p">)</span>
+        <span class="n">mutation_rates</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">mutation_rate_range</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">demography_seeds</span><span class="p">))</span>
+        <span class="n">recombination_rates</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">recombination_rate_range</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">demography_seeds</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">demography_seed</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">demography_seeds</span><span class="p">):</span>
+            <span class="n">mutation_rate</span> <span class="o">=</span> <span class="n">mutation_rates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">recombination_rate</span> <span class="o">=</span> <span class="n">recombination_rates</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">demography</span> <span class="o">=</span> <span class="n">sample_demography</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">demography_seed</span><span class="p">)</span>
+            <span class="n">combinations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">mutation_rate</span><span class="p">,</span> <span class="n">recombination_rate</span><span class="p">,</span> <span class="n">demography</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">combinations</span>
+
+    
+<div class="viewcode-block" id="DemographyStorage.get_combinations">
+<a class="viewcode-back" href="../../api.html#cxt.utils.DemographyStorage.get_combinations">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_combinations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">combinations</span></div>
+</div>
+
+    
+
+<span class="n">storage</span> <span class="o">=</span> <span class="n">DemographyStorage</span><span class="p">()</span>
 
 
 <div class="viewcode-block" id="simulate_parameterized_tree_sequence">
@@ -110,23 +187,56 @@
         <span class="n">mutation_rate</span><span class="o">=</span><span class="mf">1.29e-8</span><span class="p">,</span>
         <span class="n">demography</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">island_demography</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="c1">#msprime.Demography.island_model([10000, 5000, 5000], migration_rate=0.1)</span>
+        <span class="n">hard_sweep</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">random_scenario</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">selection_coefficient</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">selection_position</span><span class="o">=</span><span class="mf">0.5e6</span>
         <span class="p">):</span>
     <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
     <span class="n">SEED</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="mi">32</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">assert</span> <span class="n">demography</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">island_demography</span> <span class="ow">is</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">demography</span><span class="p">,</span> <span class="n">island_demography</span><span class="p">,</span> <span class="n">hard_sweep</span><span class="p">,</span> <span class="n">random_scenario</span><span class="p">])</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
     <span class="k">if</span> <span class="n">demography</span><span class="p">:</span>
         <span class="n">ts</span> <span class="o">=</span> <span class="n">msprime</span><span class="o">.</span><span class="n">sim_ancestry</span><span class="p">(</span>
             <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span> 
             <span class="n">demography</span><span class="o">=</span><span class="n">demography</span><span class="p">,</span>
             <span class="n">sequence_length</span><span class="o">=</span><span class="n">sequence_length</span><span class="p">,</span>
             <span class="n">recombination_rate</span><span class="o">=</span><span class="n">recombination_rate</span><span class="p">,</span> <span class="n">ploidy</span><span class="o">=</span><span class="n">ploidy</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">)</span>
+        
+    <span class="k">elif</span> <span class="n">random_scenario</span><span class="p">:</span>
+        <span class="c1"># [1, ... ,65]</span>
+        <span class="k">assert</span> <span class="n">random_scenario</span><span class="o">-</span><span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">demography_seeds</span><span class="p">),</span> <span class="s2">&quot;Invalid random scenario index&quot;</span>
+        <span class="n">random_scenario</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">mutation_rate</span><span class="p">,</span> <span class="n">recombination_rate</span><span class="p">,</span> <span class="n">demography</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">get_combinations</span><span class="p">()[</span><span class="n">random_scenario</span><span class="p">]</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">msprime</span><span class="o">.</span><span class="n">sim_ancestry</span><span class="p">(</span>
+            <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span> 
+            <span class="n">demography</span><span class="o">=</span><span class="n">demography</span><span class="p">,</span>
+            <span class="n">sequence_length</span><span class="o">=</span><span class="n">sequence_length</span><span class="p">,</span>
+            <span class="n">recombination_rate</span><span class="o">=</span><span class="n">recombination_rate</span><span class="p">,</span> <span class="n">ploidy</span><span class="o">=</span><span class="n">ploidy</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">)</span>
+
     <span class="k">elif</span> <span class="n">island_demography</span><span class="p">:</span>
         <span class="n">ts</span> <span class="o">=</span> <span class="n">msprime</span><span class="o">.</span><span class="n">sim_ancestry</span><span class="p">(</span>
             <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span> <span class="c1"># {0: 15, 1: 5, 2: 5}</span>
             <span class="n">sequence_length</span><span class="o">=</span><span class="n">sequence_length</span><span class="p">,</span>
             <span class="n">demography</span><span class="o">=</span><span class="n">island_demography</span><span class="p">,</span>
             <span class="n">recombination_rate</span><span class="o">=</span><span class="n">recombination_rate</span><span class="p">,</span> <span class="n">ploidy</span><span class="o">=</span><span class="n">ploidy</span><span class="p">,</span> <span class="n">random_seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">hard_sweep</span><span class="p">:</span>
+        <span class="n">sweep_model</span> <span class="o">=</span> <span class="n">msprime</span><span class="o">.</span><span class="n">SweepGenicSelection</span><span class="p">(</span>
+        <span class="n">position</span><span class="o">=</span><span class="n">selection_position</span><span class="p">,</span>  
+        <span class="n">start_frequency</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">population_size</span><span class="p">),</span>
+        <span class="n">end_frequency</span><span class="o">=</span><span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">population_size</span><span class="p">)),</span>
+        <span class="n">s</span><span class="o">=</span><span class="n">selection_coefficient</span><span class="p">,</span>
+        <span class="n">dt</span><span class="o">=</span><span class="mf">1e-6</span>
+    <span class="p">)</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">msprime</span><span class="o">.</span><span class="n">sim_ancestry</span><span class="p">(</span>
+            <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="p">[</span><span class="n">sweep_model</span><span class="p">,</span> <span class="n">msprime</span><span class="o">.</span><span class="n">StandardCoalescent</span><span class="p">()],</span>
+            <span class="n">population_size</span><span class="o">=</span><span class="n">population_size</span><span class="p">,</span>
+            <span class="n">recombination_rate</span><span class="o">=</span><span class="n">recombination_rate</span><span class="p">,</span>
+            <span class="n">sequence_length</span><span class="o">=</span><span class="n">sequence_length</span><span class="p">,</span>
+        <span class="p">)</span>
+
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ts</span> <span class="o">=</span> <span class="n">msprime</span><span class="o">.</span><span class="n">sim_ancestry</span><span class="p">(</span>
             <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span> 
@@ -159,13 +269,20 @@
 <span class="n">w_multipliers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">])</span>
 <div class="viewcode-block" id="ts2X_vectorized">
 <a class="viewcode-back" href="../../api.html#cxt.utils.ts2X_vectorized">[docs]</a>
-<span class="k">def</span> <span class="nf">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">4000</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Memory-efficient conversion of tree sequence to feature matrix&quot;&quot;&quot;</span>
     <span class="n">site_positions</span> <span class="o">=</span> <span class="n">retrieve_site_positions</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">site_positions</span> <span class="o">-=</span> <span class="n">offset</span>
     <span class="n">gm</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">genotype_matrix</span><span class="p">()</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">gm</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">gm</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">ts</span><span class="o">.</span><span class="n">num_samples</span><span class="p">)</span>
+    <span class="n">gm</span> <span class="o">=</span> <span class="n">gm</span><span class="p">[:,</span> <span class="o">~</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">site_positions</span> <span class="o">=</span> <span class="n">site_positions</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span>
+
     <span class="n">num_samples</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
     <span class="n">frequencies</span> <span class="o">=</span> <span class="n">gm</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">sequence_length</span> <span class="o">=</span> <span class="n">ts</span><span class="o">.</span><span class="n">sequence_length</span>
+    <span class="n">sequence_length</span> <span class="o">=</span> <span class="mf">1e6</span><span class="c1">#ts.sequence_length</span>
     
     <span class="c1"># Calculate xor product</span>
     <span class="n">xor_freqs</span> <span class="o">=</span> <span class="n">frequencies</span> <span class="o">*</span> <span class="n">xor_ops</span><span class="p">(</span><span class="n">gm</span><span class="p">[</span><span class="n">pivot_A</span><span class="p">],</span> <span class="n">gm</span><span class="p">[</span><span class="n">pivot_B</span><span class="p">])</span>
@@ -214,7 +331,7 @@
 
 <div class="viewcode-block" id="interpolate_tmrcas">
 <a class="viewcode-back" href="../../api.html#cxt.utils.interpolate_tmrcas">[docs]</a>
-<span class="k">def</span> <span class="nf">interpolate_tmrcas</span><span class="p">(</span><span class="n">ts</span><span class="p">:</span> <span class="n">tskit</span><span class="o">.</span><span class="n">TreeSequence</span><span class="p">,</span> <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">interpolate_tmrcas</span><span class="p">(</span><span class="n">ts</span><span class="p">:</span> <span class="n">tskit</span><span class="o">.</span><span class="n">TreeSequence</span><span class="p">,</span> <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sequence_length</span> <span class="o">=</span> <span class="mf">1e6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the interpolated TMRCA values for a given tree sequence.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">extract_tmrca_data</span><span class="p">(</span><span class="n">tree</span><span class="p">:</span> <span class="n">tskit</span><span class="o">.</span><span class="n">Tree</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
         <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">interval</span>
@@ -227,7 +344,7 @@
     <span class="n">y_tmrca_interpolated</span> <span class="o">=</span> <span class="n">interpolate_tmrca_per_window</span><span class="p">(</span>
         <span class="n">position</span><span class="o">=</span><span class="n">tmrca_array</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
         <span class="n">tmrca</span><span class="o">=</span><span class="n">tmrca_array</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">],</span>
-        <span class="n">interval_end</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">sequence_length</span><span class="p">)</span> <span class="o">+</span> <span class="n">window_size</span><span class="p">,</span>
+        <span class="n">interval_end</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">sequence_length</span><span class="p">)</span> <span class="o">+</span> <span class="n">window_size</span><span class="p">,</span>
         <span class="n">interval_size</span><span class="o">=</span><span class="n">window_size</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">y_tmrca_interpolated</span></div>
@@ -244,7 +361,8 @@
     <span class="n">tgt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">interpolate_tmrcas</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="p">[</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">]),</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
     <span class="n">src</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">src</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
     <span class="n">src</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
-    <span class="n">tgt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">discretize</span><span class="p">(</span><span class="n">tgt</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">256</span><span class="p">)))</span>
+    <span class="c1">#tgt = np.array(discretize(tgt, np.linspace(3, 14, 256)))</span>
+    <span class="n">tgt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">discretize</span><span class="p">(</span><span class="n">tgt</span><span class="p">,</span> <span class="n">TIMES</span><span class="p">))</span>
     <span class="n">tgt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">tgt</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span>
     <span class="n">tgt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="n">tgt</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span></div>
@@ -252,28 +370,40 @@
 
 <div class="viewcode-block" id="ts2input_numpy">
 <a class="viewcode-back" href="../../api.html#cxt.utils.ts2input_numpy">[docs]</a>
-<span class="k">def</span> <span class="nf">ts2input_numpy</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">):</span>
-    <span class="n">Xxor</span> <span class="o">=</span> <span class="n">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="n">pivot_B</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
-    <span class="n">Xxnor</span> <span class="o">=</span> <span class="n">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xnor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="n">pivot_B</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">ts2input_numpy</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ignore_target</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">Xxor</span> <span class="o">=</span> <span class="n">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="n">pivot_B</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+    <span class="n">Xxnor</span> <span class="o">=</span> <span class="n">ts2X_vectorized</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">xor_ops</span><span class="o">=</span><span class="n">xnor</span><span class="p">,</span> <span class="n">pivot_A</span><span class="o">=</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="o">=</span><span class="n">pivot_B</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
     <span class="n">src</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">Xxor</span><span class="p">,</span> <span class="n">Xxnor</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
-    <span class="n">tgt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">interpolate_tmrcas</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="p">[</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">]),</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_target</span><span class="p">:</span>
+        <span class="n">tgt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">interpolate_tmrcas</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="p">[</span><span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">]),</span> <span class="n">window_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
     <span class="n">src</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>  <span class="c1"># Log transformation</span>
-    <span class="n">tgt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">discretize</span><span class="p">(</span><span class="n">tgt</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">256</span><span class="p">)))</span>
-    <span class="n">tgt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tgt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># Add special token and shift indices</span>
+    <span class="c1">#tgt = np.array(discretize(tgt, np.linspace(3, 14, 256)))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_target</span><span class="p">:</span>
+        <span class="n">tgt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">discretize</span><span class="p">(</span><span class="n">tgt</span><span class="p">,</span> <span class="n">TIMES</span><span class="p">))</span>
+        <span class="n">tgt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tgt</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>  <span class="c1"># Add special token and shift indices</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tgt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
     <span class="k">return</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span></div>
 
 
+<span class="c1">#def generate_causal_mask(seq_len, device):</span>
+<span class="c1">#    mask = torch.tril(torch.ones((seq_len, seq_len), device=device)).bool()</span>
+<span class="c1">#    return mask.unsqueeze(0).unsqueeze(0)  # [1, 1, T, T]</span>
+
 <div class="viewcode-block" id="generate_causal_mask">
 <a class="viewcode-back" href="../../api.html#cxt.utils.generate_causal_mask">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_causal_mask</span><span class="p">(</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tril</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">mask</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># [1, 1, T, T]</span></div>
+<span class="k">def</span> <span class="nf">generate_causal_mask</span><span class="p">(</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">full_attention_n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
+    <span class="n">full_attention_n</span> <span class="o">=</span> <span class="n">full_attention_n</span> <span class="k">if</span> <span class="n">full_attention_n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tril</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">))</span>
+    <span class="n">mask</span><span class="p">[:</span><span class="n">full_attention_n</span><span class="p">,</span> <span class="p">:</span><span class="n">full_attention_n</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># Full attention for first n tokens</span>
+    <span class="k">return</span> <span class="n">mask</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
 
 
 
 
-<span class="n">TIMES</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+
+
 
 <div class="viewcode-block" id="create_sawtooth_demogaphy_object">
 <a class="viewcode-back" href="../../api.html#cxt.utils.create_sawtooth_demogaphy_object">[docs]</a>
@@ -319,8 +449,8 @@
 <div class="viewcode-block" id="process_pair">
 <a class="viewcode-back" href="../../api.html#cxt.utils.process_pair">[docs]</a>
 <span class="k">def</span> <span class="nf">process_pair</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-    <span class="n">ts</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span> <span class="o">=</span> <span class="n">args</span>
-    <span class="k">return</span> <span class="n">ts2input_numpy</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">)</span></div>
+    <span class="n">ts</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ignore_target</span> <span class="o">=</span> <span class="n">args</span>
+    <span class="k">return</span> <span class="n">ts2input_numpy</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">pivot_A</span><span class="p">,</span> <span class="n">pivot_B</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ignore_target</span><span class="p">)</span></div>
 
 
 
@@ -335,6 +465,134 @@
     <span class="k">return</span> <span class="n">mse_values</span></div>
 
 
+
+<div class="viewcode-block" id="diversity_bias_correction">
+<a class="viewcode-back" href="../../api.html#cxt.utils.diversity_bias_correction">[docs]</a>
+<span class="k">def</span> <span class="nf">diversity_bias_correction</span><span class="p">(</span>
+    <span class="n">tree_sequence</span><span class="p">:</span> <span class="n">tskit</span><span class="o">.</span><span class="n">TreeSequence</span><span class="p">,</span>
+    <span class="n">mutation_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">predictions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">pivot_pairs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">zero_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">return_intercept</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Correct the predicted TMRCAs such that expected diversity matches</span>
+<span class="sd">    observed diversity, for a given mutation rate. </span>
+
+<span class="sd">    The input predictions are assumed to have dimensions </span>
+<span class="sd">    `(replicates, pairs, windows)`.</span>
+
+<span class="sd">    The correction is undefined for pairs with zero observed diversity.</span>
+<span class="sd">    In this case, an offset equal to the minimum nonzero diversity in the sample </span>
+<span class="sd">    is added (if `zero_offset` is zero, default).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">predictions</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="k">assert</span> <span class="n">pivot_pairs</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="n">pivot_pairs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">predictions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">pivot_pairs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="n">obs_div</span> <span class="o">=</span> <span class="n">tree_sequence</span><span class="o">.</span><span class="n">trim</span><span class="p">()</span><span class="o">.</span><span class="n">diversity</span><span class="p">(</span><span class="n">sample_sets</span><span class="o">=</span><span class="n">pivot_pairs</span><span class="p">)</span>
+    <span class="c1"># NB: average over replicates in log space</span>
+    <span class="n">fit_div</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">predictions</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">mutation_rate</span>
+    <span class="n">obs_div</span><span class="p">[</span><span class="n">obs_div</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">obs_div</span><span class="p">[</span><span class="n">obs_div</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">if</span> <span class="n">zero_offset</span> <span class="o">==</span> <span class="mi">0</span> \
+        <span class="k">else</span> <span class="n">zero_offset</span> <span class="o">/</span> <span class="n">tree_sequence</span><span class="o">.</span><span class="n">trim</span><span class="p">()</span><span class="o">.</span><span class="n">sequence_length</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">obs_div</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">fit_div</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">corrected</span> <span class="o">=</span> <span class="n">predictions</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">obs_div</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">fit_div</span><span class="p">))[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">intercept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">obs_div</span> <span class="o">/</span> <span class="n">mutation_rate</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">corrected</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">return_intercept</span> <span class="k">else</span> <span class="p">(</span><span class="n">corrected</span><span class="p">,</span> <span class="n">intercept</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="diversity_bias_correction_by_rep">
+<a class="viewcode-back" href="../../api.html#cxt.utils.diversity_bias_correction_by_rep">[docs]</a>
+<span class="k">def</span> <span class="nf">diversity_bias_correction_by_rep</span><span class="p">(</span>
+    <span class="n">tree_sequence</span><span class="p">:</span> <span class="n">tskit</span><span class="o">.</span><span class="n">TreeSequence</span><span class="p">,</span>
+    <span class="n">mutation_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">predictions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">pivot_pairs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">zero_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">return_intercept</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Correct the predicted TMRCAs such that expected diversity matches</span>
+<span class="sd">    observed diversity, for a given mutation rate. </span>
+
+<span class="sd">    The input predictions are assumed to have dimensions </span>
+<span class="sd">    `(replicates, pairs, windows)`.</span>
+
+<span class="sd">    The correction is undefined for pairs with zero observed diversity.</span>
+<span class="sd">    In this case, an offset equal to the minimum nonzero diversity in the sample </span>
+<span class="sd">    is added (if `zero_offset` is zero, default).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">predictions</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="k">assert</span> <span class="n">pivot_pairs</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="n">pivot_pairs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">predictions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">pivot_pairs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="n">obs_div</span> <span class="o">=</span> <span class="n">tree_sequence</span><span class="o">.</span><span class="n">trim</span><span class="p">()</span><span class="o">.</span><span class="n">diversity</span><span class="p">(</span><span class="n">sample_sets</span><span class="o">=</span><span class="n">pivot_pairs</span><span class="p">)</span>
+    <span class="n">obs_div</span><span class="p">[</span><span class="n">obs_div</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">obs_div</span><span class="p">[</span><span class="n">obs_div</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">if</span> <span class="n">zero_offset</span> <span class="o">==</span> <span class="mi">0</span> \
+        <span class="k">else</span> <span class="n">zero_offset</span> <span class="o">/</span> <span class="n">tree_sequence</span><span class="o">.</span><span class="n">trim</span><span class="p">()</span><span class="o">.</span><span class="n">sequence_length</span>
+    <span class="n">corrected</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">rep</span> <span class="ow">in</span> <span class="n">predictions</span><span class="p">:</span>
+        <span class="n">fit_div</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">mutation_rate</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">obs_div</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">fit_div</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">corrected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">rep</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">obs_div</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">fit_div</span><span class="p">))[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="n">corrected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">corrected</span><span class="p">)</span>
+    <span class="n">intercept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">obs_div</span> <span class="o">/</span> <span class="n">mutation_rate</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">corrected</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">return_intercept</span> <span class="k">else</span> <span class="p">(</span><span class="n">corrected</span><span class="p">,</span> <span class="n">intercept</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="stochastic_diversity_bias_correction">
+<a class="viewcode-back" href="../../api.html#cxt.utils.stochastic_diversity_bias_correction">[docs]</a>
+<span class="k">def</span> <span class="nf">stochastic_diversity_bias_correction</span><span class="p">(</span>
+    <span class="n">tree_sequence</span><span class="p">:</span> <span class="n">tskit</span><span class="o">.</span><span class="n">TreeSequence</span><span class="p">,</span>
+    <span class="n">mutation_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">predictions</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">pivot_pairs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">return_intercept</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Correct the predicted TMRCAs such that expected diversity matches</span>
+<span class="sd">    observed diversity, for a given mutation rate. This is done stochastically,</span>
+<span class="sd">    by using the fact that under the model,</span>
+
+<span class="sd">        mutation_count ~ Poisson(2 * correction * mu * \sum_i TMRCA_i * window_size_i)</span>
+<span class="sd">    </span>
+<span class="sd">    the posterior (given improper constant prior) is,</span>
+
+<span class="sd">        correction ~ Gamma(mutation_count + 1, 2 * mu * \sum_i TMRCA_i * window_size_i)</span>
+
+<span class="sd">    and sampling accordingly (e.g. iid for each TMRCA sample, pivot pair).</span>
+<span class="sd">    </span>
+<span class="sd">    The input predictions are assumed to have dimensions </span>
+<span class="sd">    `(replicates, pairs, windows)`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">predictions</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="k">assert</span> <span class="n">pivot_pairs</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="n">pivot_pairs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">predictions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">pivot_pairs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
+    <span class="n">mutation_count</span> <span class="o">=</span> <span class="n">tree_sequence</span><span class="o">.</span><span class="n">trim</span><span class="p">()</span><span class="o">.</span><span class="n">diversity</span><span class="p">(</span>
+        <span class="n">sample_sets</span><span class="o">=</span><span class="n">pivot_pairs</span><span class="p">,</span> <span class="n">span_normalise</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">sequence_length</span> <span class="o">=</span> <span class="n">tree_sequence</span><span class="o">.</span><span class="n">trim</span><span class="p">()</span><span class="o">.</span><span class="n">sequence_length</span>
+    <span class="n">corrected</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">intercept</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">log_tmrca</span> <span class="ow">in</span> <span class="n">predictions</span><span class="p">:</span>
+        <span class="n">rate</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_tmrca</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">mutation_rate</span> <span class="o">*</span> <span class="n">sequence_length</span>
+        <span class="n">correction</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">mutation_count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span> <span class="n">rate</span><span class="p">)</span>
+        <span class="n">corrected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log_tmrca</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">correction</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
+        <span class="n">intercept</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_tmrca</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">correction</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="n">corrected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">corrected</span><span class="p">)</span>
+    <span class="n">intercept</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">intercept</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">corrected</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">return_intercept</span> <span class="k">else</span> <span class="p">(</span><span class="n">corrected</span><span class="p">,</span> <span class="n">intercept</span><span class="p">)</span></div>
 
 </pre></div>
 

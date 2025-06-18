@@ -14,7 +14,7 @@ Constant Demography Dataset (cdd):
         --start_batch 0 \
         --pivot_A 0 \
         --pivot_B 1 \
-        --data_dir /sietch_colab/kkor/tiny_batches_base_dataset \
+        --data_dir /sietch_colab/kkor/base_dataset \
         --scenario constant
 
 Sawtooth Demography Dataset (sdd) for fine-tuning:
@@ -28,7 +28,7 @@ Sawtooth Demography Dataset (sdd) for fine-tuning:
         --start_batch 0 \
         --pivot_A 0 \
         --pivot_B 1 \
-        --data_dir /sietch_colab/kkor/tiny_batches_ssd \
+        --data_dir /sietch_colab/kkor/ssd \
         --scenario sawtooth
 
 Island Demography Dataset (idd) for fine-tuning:

@@ -18,8 +18,7 @@
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Gallery" href="gallery.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -32,7 +31,6 @@
           
           <a href="index.html">
             
-              <img src="_static/logo_3d_2.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -46,11 +44,8 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick start</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial for Inference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="simulation.html">Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="training.html">Training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="comparison.html">Comparisons with other tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gallery.html">Gallery</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-cxt.modules">cxt.modules</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.modules.Block"><code class="docutils literal notranslate"><span class="pre">Block</span></code></a><ul>
@@ -83,6 +78,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-cxt.model">cxt.model</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.model.TokenFreeDecoder"><code class="docutils literal notranslate"><span class="pre">TokenFreeDecoder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cxt.model.TokenFreeDecoder.cache_to_device"><code class="docutils literal notranslate"><span class="pre">TokenFreeDecoder.cache_to_device()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#cxt.model.TokenFreeDecoder.clear_cache"><code class="docutils literal notranslate"><span class="pre">TokenFreeDecoder.clear_cache()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#cxt.model.TokenFreeDecoder.configure_optimizers"><code class="docutils literal notranslate"><span class="pre">TokenFreeDecoder.configure_optimizers()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#cxt.model.TokenFreeDecoder.forward"><code class="docutils literal notranslate"><span class="pre">TokenFreeDecoder.forward()</span></code></a></li>
@@ -93,15 +89,25 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-cxt.simulation">cxt.simulations</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.simulation.create_sawtooth_demogaphy_object"><code class="docutils literal notranslate"><span class="pre">create_sawtooth_demogaphy_object()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.simulation.generate_data"><code class="docutils literal notranslate"><span class="pre">generate_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.simulation.is_any_numeric_or_roman_numeral"><code class="docutils literal notranslate"><span class="pre">is_any_numeric_or_roman_numeral()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.simulation.process_batches"><code class="docutils literal notranslate"><span class="pre">process_batches()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.simulation.random_sample_counts"><code class="docutils literal notranslate"><span class="pre">random_sample_counts()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.simulation.sampling_populations"><code class="docutils literal notranslate"><span class="pre">sampling_populations()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.simulation.save_batch"><code class="docutils literal notranslate"><span class="pre">save_batch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.simulation.simulate_random_segment"><code class="docutils literal notranslate"><span class="pre">simulate_random_segment()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#module-cxt.utils">cxt.utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.utils.DemographyStorage"><code class="docutils literal notranslate"><span class="pre">DemographyStorage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#cxt.utils.DemographyStorage.get_combinations"><code class="docutils literal notranslate"><span class="pre">DemographyStorage.get_combinations()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.accumulating_mses"><code class="docutils literal notranslate"><span class="pre">accumulating_mses()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.calculate_window_sfs_vectorized"><code class="docutils literal notranslate"><span class="pre">calculate_window_sfs_vectorized()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.create_sawtooth_demogaphy_object"><code class="docutils literal notranslate"><span class="pre">create_sawtooth_demogaphy_object()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.discretize"><code class="docutils literal notranslate"><span class="pre">discretize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.utils.diversity_bias_correction"><code class="docutils literal notranslate"><span class="pre">diversity_bias_correction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.utils.diversity_bias_correction_by_rep"><code class="docutils literal notranslate"><span class="pre">diversity_bias_correction_by_rep()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.generate_causal_mask"><code class="docutils literal notranslate"><span class="pre">generate_causal_mask()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.interpolate_tmrca_per_window"><code class="docutils literal notranslate"><span class="pre">interpolate_tmrca_per_window()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.interpolate_tmrcas"><code class="docutils literal notranslate"><span class="pre">interpolate_tmrcas()</span></code></a></li>
@@ -110,7 +116,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.post_process"><code class="docutils literal notranslate"><span class="pre">post_process()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.process_pair"><code class="docutils literal notranslate"><span class="pre">process_pair()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.retrieve_site_positions"><code class="docutils literal notranslate"><span class="pre">retrieve_site_positions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.utils.sample_demography"><code class="docutils literal notranslate"><span class="pre">sample_demography()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.utils.sample_population_size"><code class="docutils literal notranslate"><span class="pre">sample_population_size()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.simulate_parameterized_tree_sequence"><code class="docutils literal notranslate"><span class="pre">simulate_parameterized_tree_sequence()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cxt.utils.stochastic_diversity_bias_correction"><code class="docutils literal notranslate"><span class="pre">stochastic_diversity_bias_correction()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.ts2X_vectorized"><code class="docutils literal notranslate"><span class="pre">ts2X_vectorized()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.ts2input"><code class="docutils literal notranslate"><span class="pre">ts2input()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cxt.utils.ts2input_numpy"><code class="docutils literal notranslate"><span class="pre">ts2input_numpy()</span></code></a></li>
@@ -338,6 +347,11 @@ registered hooks while the latter silently ignores them.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cxt.model.</span></span><span class="sig-name descname"><span class="pre">TokenFreeDecoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/model.html#TokenFreeDecoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.model.TokenFreeDecoder" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
 <dl class="py method">
+<dt class="sig sig-object py" id="cxt.model.TokenFreeDecoder.cache_to_device">
+<span class="sig-name descname"><span class="pre">cache_to_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/model.html#TokenFreeDecoder.cache_to_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.model.TokenFreeDecoder.cache_to_device" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="cxt.model.TokenFreeDecoder.clear_cache">
 <span class="sig-name descname"><span class="pre">clear_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/model.html#TokenFreeDecoder.clear_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.model.TokenFreeDecoder.clear_cache" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -406,6 +420,11 @@ registered hooks while the latter silently ignores them.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="cxt.simulation.is_any_numeric_or_roman_numeral">
+<span class="sig-prename descclassname"><span class="pre">cxt.simulation.</span></span><span class="sig-name descname"><span class="pre">is_any_numeric_or_roman_numeral</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/simulation.html#is_any_numeric_or_roman_numeral"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.simulation.is_any_numeric_or_roman_numeral" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cxt.simulation.process_batches">
 <span class="sig-prename descclassname"><span class="pre">cxt.simulation.</span></span><span class="sig-name descname"><span class="pre">process_batches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_processes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_B</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts_simulation_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">randomize_pivots</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/cxt/simulation.html#process_batches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.simulation.process_batches" title="Link to this definition"></a></dt>
 <dd><p>Process data in batches using multiprocessing and save the results.</p>
@@ -430,13 +449,56 @@ registered hooks while the latter silently ignores them.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="cxt.simulation.random_sample_counts">
+<span class="sig-prename descclassname"><span class="pre">cxt.simulation.</span></span><span class="sig-name descname"><span class="pre">random_sample_counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampling_populations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/cxt/simulation.html#random_sample_counts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.simulation.random_sample_counts" title="Link to this definition"></a></dt>
+<dd><p>Randomly distributes <cite>n</cite> samples across the given populations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sampling_populations</strong> (<em>list</em>) – Populations to sample from, each with a <cite>.name</cite> attribute.</p></li>
+<li><p><strong>num_samples</strong> (<em>int</em>) – Number of samples to draw.</p></li>
+<li><p><strong>seed</strong> (<em>int</em>) – Optional seed for reproducibility.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary mapping population names to sample counts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cxt.simulation.sampling_populations">
+<span class="sig-prename descclassname"><span class="pre">cxt.simulation.</span></span><span class="sig-name descname"><span class="pre">sampling_populations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/simulation.html#sampling_populations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.simulation.sampling_populations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cxt.simulation.save_batch">
 <span class="sig-prename descclassname"><span class="pre">cxt.simulation.</span></span><span class="sig-name descname"><span class="pre">save_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/simulation.html#save_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.simulation.save_batch" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="cxt.simulation.simulate_random_segment">
+<span class="sig-prename descclassname"><span class="pre">cxt.simulation.</span></span><span class="sig-name descname"><span class="pre">simulate_random_segment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segment_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'HomSap'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">genetic_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/simulation.html#simulate_random_segment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.simulation.simulate_random_segment" title="Link to this definition"></a></dt>
+<dd><p>Simulates a random human genomic segment using stdpopsim and msprime.</p>
+</dd></dl>
+
 </section>
 <section id="module-cxt.utils">
 <span id="cxt-utils"></span><h2>cxt.utils<a class="headerlink" href="#module-cxt.utils" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="cxt.utils.DemographyStorage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">DemographyStorage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mutation_rate_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1e-09,</span> <span class="pre">1e-08)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recombination_rate_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1e-09,</span> <span class="pre">1e-08)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#DemographyStorage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.DemographyStorage" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cxt.utils.DemographyStorage.get_combinations">
+<span class="sig-name descname"><span class="pre">get_combinations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#DemographyStorage.get_combinations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.DemographyStorage.get_combinations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="cxt.utils.accumulating_mses">
 <span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">accumulating_mses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yhats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ytrues</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#accumulating_mses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.accumulating_mses" title="Link to this definition"></a></dt>
@@ -459,8 +521,32 @@ registered hooks while the latter silently ignores them.</p>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="cxt.utils.diversity_bias_correction">
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">diversity_bias_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_sequence:</span> <span class="pre">~tskit.trees.TreeSequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_rate:</span> <span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictions:</span> <span class="pre">~numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_pairs:</span> <span class="pre">~numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_offset:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_intercept:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False)</span> <span class="pre">-&gt;</span> <span class="pre">(&lt;class</span> <span class="pre">'numpy.ndarray'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;class</span> <span class="pre">'numpy.ndarray'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#diversity_bias_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.diversity_bias_correction" title="Link to this definition"></a></dt>
+<dd><p>Correct the predicted TMRCAs such that expected diversity matches
+observed diversity, for a given mutation rate.</p>
+<p>The input predictions are assumed to have dimensions
+<cite>(replicates, pairs, windows)</cite>.</p>
+<p>The correction is undefined for pairs with zero observed diversity.
+In this case, an offset equal to the minimum nonzero diversity in the sample
+is added (if <cite>zero_offset</cite> is zero, default).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cxt.utils.diversity_bias_correction_by_rep">
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">diversity_bias_correction_by_rep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_sequence:</span> <span class="pre">~tskit.trees.TreeSequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_rate:</span> <span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictions:</span> <span class="pre">~numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_pairs:</span> <span class="pre">~numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_offset:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_intercept:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False)</span> <span class="pre">-&gt;</span> <span class="pre">(&lt;class</span> <span class="pre">'numpy.ndarray'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;class</span> <span class="pre">'numpy.ndarray'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#diversity_bias_correction_by_rep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.diversity_bias_correction_by_rep" title="Link to this definition"></a></dt>
+<dd><p>Correct the predicted TMRCAs such that expected diversity matches
+observed diversity, for a given mutation rate.</p>
+<p>The input predictions are assumed to have dimensions
+<cite>(replicates, pairs, windows)</cite>.</p>
+<p>The correction is undefined for pairs with zero observed diversity.
+In this case, an offset equal to the minimum nonzero diversity in the sample
+is added (if <cite>zero_offset</cite> is zero, default).</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cxt.utils.generate_causal_mask">
-<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">generate_causal_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#generate_causal_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.generate_causal_mask" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">generate_causal_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_attention_n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#generate_causal_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.generate_causal_mask" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -471,7 +557,7 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cxt.utils.interpolate_tmrcas">
-<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">interpolate_tmrcas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TreeSequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/cxt/utils.html#interpolate_tmrcas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.interpolate_tmrcas" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">interpolate_tmrcas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TreeSequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/cxt/utils.html#interpolate_tmrcas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.interpolate_tmrcas" title="Link to this definition"></a></dt>
 <dd><p>Calculate the interpolated TMRCA values for a given tree sequence.</p>
 </dd></dl>
 
@@ -501,13 +587,41 @@ registered hooks while the latter silently ignores them.</p>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="cxt.utils.simulate_parameterized_tree_sequence">
-<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">simulate_parameterized_tree_sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recombination_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.28e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ploidy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.29e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">demography</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">island_demography</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#simulate_parameterized_tree_sequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.simulate_parameterized_tree_sequence" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="cxt.utils.sample_demography">
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">sample_demography</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_time_windows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#sample_demography"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.sample_demography" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="cxt.utils.sample_population_size">
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">sample_population_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_time_windows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/cxt/utils.html#sample_population_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.sample_population_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cxt.utils.simulate_parameterized_tree_sequence">
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">simulate_parameterized_tree_sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">population_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recombination_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.28e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ploidy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.29e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">demography</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">island_demography</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hard_sweep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_scenario</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selection_coefficient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selection_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#simulate_parameterized_tree_sequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.simulate_parameterized_tree_sequence" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cxt.utils.stochastic_diversity_bias_correction">
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">stochastic_diversity_bias_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree_sequence:</span> <span class="pre">~tskit.trees.TreeSequence</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutation_rate:</span> <span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predictions:</span> <span class="pre">~numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_pairs:</span> <span class="pre">~numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_intercept:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng:</span> <span class="pre">~numpy.random._generator.Generator</span> <span class="pre">=</span> <span class="pre">None)</span> <span class="pre">-&gt;</span> <span class="pre">(&lt;class</span> <span class="pre">'numpy.ndarray'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;class</span> <span class="pre">'numpy.ndarray'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#stochastic_diversity_bias_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.stochastic_diversity_bias_correction" title="Link to this definition"></a></dt>
+<dd><p>Correct the predicted TMRCAs such that expected diversity matches
+observed diversity, for a given mutation rate. This is done stochastically,
+by using the fact that under the model,</p>
+<blockquote>
+<div><p>mutation_count ~ Poisson(2 * correction * mu * sum_i TMRCA_i * window_size_i)</p>
+</div></blockquote>
+<p>the posterior (given improper constant prior) is,</p>
+<blockquote>
+<div><p>correction ~ Gamma(mutation_count + 1, 2 * mu * sum_i TMRCA_i * window_size_i)</p>
+</div></blockquote>
+<p>and sampling accordingly (e.g. iid for each TMRCA sample, pivot pair).</p>
+<p>The input predictions are assumed to have dimensions
+<cite>(replicates, pairs, windows)</cite>.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="cxt.utils.ts2X_vectorized">
-<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">ts2X_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size=4000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size=2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xor_ops=&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_A=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_B=1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#ts2X_vectorized"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.ts2X_vectorized" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">ts2X_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_size=4000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_size=2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xor_ops=&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_A=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_B=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset=0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#ts2X_vectorized"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.ts2X_vectorized" title="Link to this definition"></a></dt>
 <dd><p>Memory-efficient conversion of tree sequence to feature matrix</p>
 </dd></dl>
 
@@ -518,7 +632,7 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cxt.utils.ts2input_numpy">
-<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">ts2input_numpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_B</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#ts2input_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.ts2input_numpy" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">cxt.utils.</span></span><span class="sig-name descname"><span class="pre">ts2input_numpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pivot_B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cxt/utils.html#ts2input_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cxt.utils.ts2input_numpy" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -537,9 +651,7 @@ registered hooks while the latter silently ignores them.</p>
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="gallery.html" class="btn btn-neutral float-left" title="Gallery" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-    </div>
+          <footer>
 
   <hr/>
 
