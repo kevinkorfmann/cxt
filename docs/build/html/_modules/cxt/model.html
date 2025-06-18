@@ -30,6 +30,7 @@
           
           <a href="../../index.html">
             
+              <img src="../../_static/logo_3d_2.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -45,7 +46,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../quick_start.html">Quick start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../simulation.html">Simulation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../training.html">Training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html">API documentation</a></li>
 </ul>
 
         </div>
@@ -84,7 +84,7 @@
 <span class="kn">from</span> <span class="nn">cxt.modules</span> <span class="kn">import</span> <span class="n">LayerNorm</span>
 
 <div class="viewcode-block" id="TokenFreeDecoder">
-<a class="viewcode-back" href="../../api.html#cxt.model.TokenFreeDecoder">[docs]</a>
+<a class="viewcode-back" href="../../tmp/api.html#cxt.model.TokenFreeDecoder">[docs]</a>
 <span class="k">class</span> <span class="nc">TokenFreeDecoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -112,7 +112,7 @@
 
 
 <div class="viewcode-block" id="TokenFreeDecoder.clear_cache">
-<a class="viewcode-back" href="../../api.html#cxt.model.TokenFreeDecoder.clear_cache">[docs]</a>
+<a class="viewcode-back" href="../../tmp/api.html#cxt.model.TokenFreeDecoder.clear_cache">[docs]</a>
     <span class="k">def</span> <span class="nf">clear_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_layer</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">attn</span><span class="o">.</span><span class="n">cache_k</span> <span class="o">*=</span> <span class="mf">0.</span> 
@@ -120,7 +120,7 @@
 
     
 <div class="viewcode-block" id="TokenFreeDecoder.cache_to_device">
-<a class="viewcode-back" href="../../api.html#cxt.model.TokenFreeDecoder.cache_to_device">[docs]</a>
+<a class="viewcode-back" href="../../tmp/api.html#cxt.model.TokenFreeDecoder.cache_to_device">[docs]</a>
     <span class="k">def</span> <span class="nf">cache_to_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_layer</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">attn</span><span class="o">.</span><span class="n">cache_k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">attn</span><span class="o">.</span><span class="n">cache_k</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
@@ -128,7 +128,7 @@
 
 
 <div class="viewcode-block" id="TokenFreeDecoder.forward">
-<a class="viewcode-back" href="../../api.html#cxt.model.TokenFreeDecoder.forward">[docs]</a>
+<a class="viewcode-back" href="../../tmp/api.html#cxt.model.TokenFreeDecoder.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">attn_mask</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">calculate_loss</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 
         <span class="k">if</span> <span class="n">use_cache</span><span class="p">:</span>
@@ -171,7 +171,7 @@
 
 
 <div class="viewcode-block" id="TokenFreeDecoder.configure_optimizers">
-<a class="viewcode-back" href="../../api.html#cxt.model.TokenFreeDecoder.configure_optimizers">[docs]</a>
+<a class="viewcode-back" href="../../tmp/api.html#cxt.model.TokenFreeDecoder.configure_optimizers">[docs]</a>
     <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight_decay</span><span class="p">,</span> <span class="n">learning_rate</span><span class="p">,</span> <span class="n">betas</span><span class="p">,</span> <span class="n">device_type</span><span class="p">):</span>
         <span class="c1"># start with all of the candidate parameters</span>
         <span class="n">param_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">pn</span><span class="p">:</span> <span class="n">p</span> <span class="k">for</span> <span class="n">pn</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()}</span>

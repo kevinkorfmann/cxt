@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quick start &mdash; cxt 0.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
@@ -80,7 +80,7 @@
 <p>From simulation to inference in a few lines of code.</p>
 <p>First, we simulate a tree sequence with stdpopsim and msprime. Here we simulate 25 diploid individuals from the Zigzag_1S14 demographic model of humans, for the first 2Mb of chromosome 1.
 We hardcoded the requirement of 50 samples, thus we specify 25 generic diploid individuals, which is a minimum requirement for the inference to work. Larger sample sizes need to be downsampled accordingly.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">stdpopsim</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">stdpopsim</span>
 <span class="n">species</span> <span class="o">=</span> <span class="n">stdpopsim</span><span class="o">.</span><span class="n">get_species</span><span class="p">(</span><span class="s2">&quot;HomSap&quot;</span><span class="p">)</span>
 <span class="n">demogr</span> <span class="o">=</span> <span class="n">species</span><span class="o">.</span><span class="n">get_demographic_model</span><span class="p">(</span><span class="s2">&quot;Zigzag_1S14&quot;</span><span class="p">)</span>
 <span class="n">sample</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;generic&quot;</span> <span class="p">:</span> <span class="mi">25</span><span class="p">}</span>
@@ -92,12 +92,12 @@ We hardcoded the requirement of 50 samples, thus we specify 25 generic diploid i
 </pre></div>
 </div>
 <p>Then, we can infer pairwise coalescence times using the <cite>translate</cite> function. Here we infer the pairwise coalescence times of sample 0 and 1, using 15 replicates. Since 50 samples are the requirement, the pivot_combinations argument takes a list of tuples, where each tuple specifies the indices of the two samples to infer the pairwise coalescence times for.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cxt.api</span> <span class="kn">import</span> <span class="n">translate</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cxt.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">translate</span>
 <span class="n">tmrca</span> <span class="o">=</span> <span class="n">translate</span><span class="p">(</span><span class="s2">&quot;example.vcf&quot;</span><span class="p">,</span> <span class="n">num_replicates</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">pivot_combinations</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
 </pre></div>
 </div>
 <p>If a mutation rate is provided, we can can apply a correction, which is recommended for real data to deal with scaling offsets.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">cxt.api</span> <span class="kn">import</span> <span class="n">translate</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">cxt.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">translate</span>
 <span class="n">mutation_rate</span> <span class="o">=</span> <span class="mf">1.29e-8</span>
 <span class="n">tmrca</span> <span class="o">=</span> <span class="n">translate</span><span class="p">(</span><span class="s2">&quot;example.vcf&quot;</span><span class="p">,</span> <span class="n">num_replicates</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">mutation_rate</span><span class="o">=</span><span class="n">mutation_rate</span><span class="p">,</span> <span class="n">pivot_combinations</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
 </pre></div>

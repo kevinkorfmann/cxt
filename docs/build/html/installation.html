@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Installation &mdash; cxt 0.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
@@ -79,9 +79,16 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
 <p>Eventually, the package will be available on PyPI. Until then, you can install it.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:kevinkorfmann/cxt.git
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+<span class="c1"># pip install uv</span>
+uv<span class="w"> </span>init<span class="w"> </span>cxt
+uv<span class="w"> </span>add<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+<span class="c1"># in case git lfs is not installed on the system (and you are not root)</span>
+conda<span class="w"> </span>install<span class="w"> </span>anaconda::git-lfs
+git<span class="w"> </span>lfs<span class="w"> </span>install
 </pre></div>
 </div>
+<p>Then, you can countinue with the quick start guide.</p>
 </section>
 
 
