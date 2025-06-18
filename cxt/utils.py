@@ -227,7 +227,7 @@ def interpolate_tmrca_per_window(
                 for start, end in zip(intervals[:-1], intervals[1:])]
     return np.array(averages)
 
-def interpolate_tmrcas(ts: tskit.TreeSequence, window_size: int) -> np.ndarray:
+def interpolate_tmrcas(ts: tskit.TreeSequence, window_size: int, sequence_length = 1e6) -> np.ndarray:
     """Calculate the interpolated TMRCA values for a given tree sequence."""
     def extract_tmrca_data(tree: tskit.Tree) -> Tuple[float, float, int, float]:
         left, right = tree.interval
@@ -237,7 +237,6 @@ def interpolate_tmrcas(ts: tskit.TreeSequence, window_size: int) -> np.ndarray:
     tmrca_landscape = [extract_tmrca_data(tree) for tree in ts.trees()]
     tmrca_array = np.array(tmrca_landscape)
 
-    sequence_length = 1e6
     y_tmrca_interpolated = interpolate_tmrca_per_window(
         position=tmrca_array[:, 0],
         tmrca=tmrca_array[:, 3],
