@@ -51,7 +51,7 @@ fig, axs = plt.subplots(rows, cols, figsize=(cols*3.5, rows*3), constrained_layo
 
 # bias
 vbound = max(np.abs(bias).max(), np.abs(bias_corr).max())
-axs[0, 0].set_title("Uncentered")
+axs[0, 0].set_title("Uncalibrated")
 img = axs[0, 0].pcolormesh(
     x_grid, y_grid,
     bias.reshape(grid_size, grid_size).T,
@@ -62,7 +62,7 @@ axs[0, 0].plot(base_x, base_y, "o", markersize=4, c="green")
 axs[0, 0].set_xscale('log', base=2)
 axs[0, 0].set_yscale('log', base=2)
 
-axs[0, 1].set_title("Centered")
+axs[0, 1].set_title("Calibrated")
 img = axs[0, 1].pcolormesh(
     x_grid, y_grid,
     bias_corr.reshape(grid_size, grid_size).T,
@@ -101,7 +101,8 @@ plt.colorbar(img, ax=axs[1, 1], label="MSE (log TMRCA)")
 
 fig.supxlabel("Coalescent unit scaling")
 fig.supylabel("Mutation rate scaling")
-plt.savefig(f"/home/natep/public_html/cxt/supp-fig-bias-mutcoal.png")
+#plt.savefig(f"/home/natep/public_html/cxt/supp-fig-bias-mutcoal.png")
+plt.savefig(f"{output_path}/supp-fig-bias-mutcoal.png")
 plt.clf()
 
 
@@ -133,6 +134,7 @@ plt.colorbar(img, ax=axs[0, 1], label="# events per bp")
 
 fig.supxlabel("Coalescent unit scaling")
 fig.supylabel("Mutation rate scaling")
-plt.savefig(f"/home/natep/public_html/cxt/supp-fig-stats-mutcoal.png")
+#plt.savefig(f"/home/natep/public_html/cxt/supp-fig-stats-mutcoal.png")
+plt.savefig(f"{output_path}/supp-fig-stats-mutcoal.png")
 plt.clf()
 
